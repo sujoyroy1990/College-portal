@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student ID Card System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <h1>Student ID Card System</h1>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('entry')">Data Entry</button>
+            <button class="tab-btn" onclick="showTab('master')">Master Data</button>
+            <button class="tab-btn" onclick="showTab('idcard')">ID Card Data</button>
+        </div>
+
+        <!-- Data Entry Form -->
+        <div id="entry-tab" class="tab-content active">
+            <h2>Student Registration</h2>
+            <form id="studentForm">
+                <!-- Basic Info -->
+                <div class="section-title">Basic Information</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Student Name *</label>
+                        <input type="text" id="studentName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Father Name *</label>
+                        <input type="text" id="fatherName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Guardian Name</label>
+                        <input type="text" id="guardianName">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile No. *</label>
+                        <input type="text" id="mobileNo" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Emergency Contact</label>
+                        <input type="text" id="emergencyContact">
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <input type="text" id="bloodGroup" placeholder="e.g., A+">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Address</label>
+                        <input type="text" id="address">
+                    </div>
+                </div>
+
+                <!-- Programme Info -->
+                <div class="section-title">Programme Information</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Programme *</label>
+                        <select id="programme" onchange="handleProgrammeChange()" required>
+                            <option value="">-- Select Programme --</option>
+                            <option value="Honours">Honours (4 Year Undergraduate Programme)</option>
+                            <option value="General">General (3 Year UG Multidisciplinary Programme)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Session (Fixed)</label>
+                        <input type="text" id="session" value="2026" readonly class="readonly">
+                    </div>
+                </div>
+
+                <!-- Stream -->
+                <div id="streamSection" class="hidden">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Stream *</label>
+                            <select id="stream" onchange="handleStreamChange()" required>
+                                <option value="">-- Select Stream --</option>
+                                <option value="BA">Bachelor of Arts</option>
+                                <option value="BSc">Bachelor of Science</option>
+                                <option value="BCom">Bachelor of Commerce</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Major Subject (Honours Only) -->
+                <div id="majorSection" class="hidden">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Major Subject *</label>
+                            <select id="majorSubject" onchange="handleMajorChange()" required>
+                                <option value="">-- Select Major Subject --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Minor Subjects -->
+                <div id="minorSection" class="hidden">
+                    <div class="section-title">Minor Subjects</div>
+                    <div class="form-row">
+                        <div class="form-group" id="minor1Group">
+                            <label>Minor Subject 1 *</label>
+                            <select id="minor1" onchange="handleMinor1Change()" required>
+                                <option value="">-- Select Minor 1 --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="minor2Group">
+                            <label>Minor Subject 2 *</label>
+                            <select id="minor2" onchange="handleMinor2Change()" required>
+                                <option value="">-- Select Minor 2 --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row" id="minor3Row">
+                        <div class="form-group" id="minor3Group">
+                            <label>Minor Subject 3</label>
+                            <select id="minor3" onchange="handleMinor3Change()">
+                                <option value="">-- Select Minor 3 --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MDC Subjects -->
+                <div id="mdcSection" class="hidden">
+                    <div class="section-title">MDC (Multidisciplinary Course) Subjects</div>
+                    <div id="mdcHonours">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>MDC Semester I</label>
+                                <select id="mdcSem1">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>MDC Semester II</label>
+                                <select id="mdcSem2">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>MDC Semester III</label>
+                                <select id="mdcSem3">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="mdcGeneral" class="hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>MDC Semester IV</label>
+                                <select id="mdcGenSem4" onchange="handleMDCGenSem4Change()" disabled>
+                                    <option value="">-- Select Minor 1,2,3 first --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>MDC Semester V</label>
+                                <select id="mdcGenSem5" onchange="handleMDCGenSem5Change()" disabled>
+                                    <option value="">-- Select MDC Sem IV first --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>MDC Semester VI</label>
+                                <select id="mdcGenSem6" disabled>
+                                    <option value="">-- Select MDC Sem V first --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEC Subjects -->
+                <div id="secSection" class="hidden">
+                    <div class="section-title">SEC (Skill Enhancement Course) Subjects</div>
+                    <!-- BA/BSc Honours SEC -->
+                    <div id="secHonours">
+                        <div class="form-row">
+                            <div class="form-group" id="honSecSem1Group">
+                                <label>SEC Semester I (Major)</label>
+                                <input type="text" id="secSem1" readonly class="readonly">
+                            </div>
+                            <div class="form-group" id="honSecSem2Group">
+                                <label>SEC Semester II (Major)</label>
+                                <input type="text" id="secSem2" readonly class="readonly">
+                            </div>
+                            <div class="form-group" id="honSecSem3Group">
+                                <label>SEC Semester III (Minor)</label>
+                                <select id="secSem3">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                            <!-- BCom Honours Fixed SEC -->
+                            <div class="form-group hidden" id="bcomHonSecSem1Group">
+                                <label>SEC Semester I</label>
+                                <input type="text" id="bcomHonSecSem1" readonly class="readonly">
+                            </div>
+                            <div class="form-group hidden" id="bcomHonSecSem2Group">
+                                <label>SEC Semester II</label>
+                                <input type="text" id="bcomHonSecSem2" readonly class="readonly">
+                            </div>
+                            <div class="form-group hidden" id="bcomHonSecSem3Group">
+                                <label>SEC Semester III</label>
+                                <input type="text" id="bcomHonSecSem3" readonly class="readonly">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- General SEC -->
+                    <div id="secGeneral" class="hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>SEC Semester III (Minor 1)</label>
+                                <input type="text" id="secGenSem3" readonly class="readonly">
+                            </div>
+                            <div class="form-group">
+                                <label>SEC Semester IV (Minor 1)</label>
+                                <input type="text" id="secGenSem4" readonly class="readonly">
+                            </div>
+                            <!-- BA/BSc General: Dropdowns for Minor 2/3 -->
+                            <div class="form-group" id="secGenSem5Group">
+                                <label>SEC Semester V (Minor 2/Minor 3)</label>
+                                <select id="secGenSem5">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="secGenSem6Group">
+                                <label>SEC Semester VI (Minor 2/Minor 3)</label>
+                                <select id="secGenSem6">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                            <!-- BCom General: Fixed readonly inputs -->
+                            <div class="form-group hidden" id="bcomSecGenSem5Group">
+                                <label>SEC Semester V</label>
+                                <input type="text" id="bcomSecGenSem5" readonly class="readonly">
+                            </div>
+                            <div class="form-group hidden" id="bcomSecGenSem6Group">
+                                <label>SEC Semester VI</label>
+                                <input type="text" id="bcomSecGenSem6" readonly class="readonly">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VAC & AEC (Fixed) -->
+                <div id="vacAecSection" class="hidden">
+                    <div class="section-title">VAC & AEC (Fixed)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>VAC Semester I</label>
+                            <input type="text" value="Yoga and Meditation" readonly class="readonly">
+                        </div>
+                        <div class="form-group">
+                            <label>VAC Semester II</label>
+                            <input type="text" value="Cyber Security" readonly class="readonly">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>AEC Semester I</label>
+                            <input type="text" value="English" readonly class="readonly">
+                        </div>
+                        <div class="form-group">
+                            <label>AEC Semester II</label>
+                            <input type="text" value="English" readonly class="readonly">
+                        </div>
+                        <div class="form-group">
+                            <label>AEC Semester III</label>
+                            <select id="aecSem3">
+                                <option value="">-- Select --</option>
+                                <option value="Bengali">Bengali</option>
+                                <option value="Sanskrit">Sanskrit</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roll No (Auto Generated) -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Roll No (Auto Generated)</label>
+                        <input type="text" id="rollNo" readonly class="readonly">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Save Data</button>
+            </form>
+            <div id="message"></div>
+            <div id="printSingleSection" class="hidden" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #1a1a2e;">
+                <h3 style="margin-bottom: 10px; color: #1a1a2e;">🖨️ Print Student Data</h3>
+                <p style="margin-bottom: 10px; color: #555;">Student data saved successfully! You can print the data now.</p>
+                <button onclick="printSingleStudent()" class="btn-primary">🖨️ Print This Student</button>
+                <button onclick="hidePrintSection()" class="btn-secondary">Close</button>
+            </div>
+        </div>
+
+        <!-- Master Data View -->
+        <div id="master-tab" class="tab-content">
+            <h2>Master Data List</h2>
+            <div class="actions">
+                <button onclick="loadStudents()" class="btn-secondary">Refresh Data</button>
+                <button onclick="exportToExcel()" class="btn-success">Export to Excel</button>
+                <button onclick="printAllStudents()" class="btn-primary">🖨️ Print All Students</button>
+            </div>
+            <div class="table-wrapper">
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Father Name</th>
+                            <th>Programme</th>
+                            <th>Stream</th>
+                            <th>Major</th>
+                            <th>Session</th>
+                            <th>Mobile</th>
+                            <th>Blood</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ID Card Data View - Data Grid Interface -->
+        <div id="idcard-tab" class="tab-content">
+            <h2>ID Card Data</h2>
+            <div class="actions">
+                <button onclick="loadIdCardGrid()" class="btn-secondary">Refresh Data</button>
+                <button onclick="exportIdCardToExcel()" class="btn-success">Export to CSV/Excel</button>
+            </div>
+            <div class="grid-info">
+                <p><strong>Tip:</strong> Click any row to select. Use Ctrl+Click for multiple rows. Press Ctrl+C to copy selected rows and paste into Excel.</p>
+            </div>
+            <div class="table-wrapper" id="idCardGridWrapper">
+                <table id="idCardGrid" class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Father Name</th>
+                            <th>Guardian Name</th>
+                            <th>Programme</th>
+                            <th>Stream</th>
+                            <th>Major Subject</th>
+                            <th>Roll No</th>
+                            <th>Session</th>
+                            <th>Mobile No.</th>
+                            <th>Blood Group</th>
+                            <th>Emergency Contact</th>
+                            <th>Address</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
