@@ -682,7 +682,7 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         sec_gen_sem4: programme === 'General' ? document.getElementById('minor1').value : null,
         sec_gen_sem5: secGenSem5Val || null,
         sec_gen_sem6: secGenSem6Val || null,
-        vac_sem1: 'Yoga and Meditation',
+        vac_sem1: 'ENVS',
         vac_sem2: 'Cyber Security',
         aec_sem1: 'English',
         aec_sem2: 'English',
@@ -899,7 +899,7 @@ function generateA4PrintHTML(student) {
     }
 
     const vacAecHTML = `
-        <div class="data-row"><span class="data-label">VAC Semester I:</span><span class="data-value">Yoga and Meditation</span></div>
+        <div class="data-row"><span class="data-label">VAC Semester I:</span><span class="data-value">ENVS</span></div>
         <div class="data-row"><span class="data-label">VAC Semester II:</span><span class="data-value">Cyber Security</span></div>
         <div class="data-row"><span class="data-label">AEC Semester I:</span><span class="data-value">English</span></div>
         <div class="data-row"><span class="data-label">AEC Semester II:</span><span class="data-value">English</span></div>
@@ -1290,7 +1290,7 @@ function generateStudentCard(student) {
     }
 
     const vacAecHTML = `
-        <div class="subject-item"><span class="sem">VAC:</span> <span class="subj">Yoga, Cyber</span></div>
+        <div class="subject-item"><span class="sem">VAC:</span> <span class="subj">ENVS, Cyber</span></div>
         <div class="subject-item"><span class="sem">AEC:</span> <span class="subj">Eng, Eng, ${student.aec_sem3 || 'N/A'}</span></div>`;
 
     return `
