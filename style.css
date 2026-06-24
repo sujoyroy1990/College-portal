@@ -140,7 +140,7 @@ h2 {
 
 /* Hidden sections */
 .hidden {
-    display: none !important;
+    display: none;
 }
 
 /* Buttons */

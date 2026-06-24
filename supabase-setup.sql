@@ -1,16 +1,16 @@
 -- ============================================
--- SUPABASE DATABASE SETUP SQL
--- Run this in Supabase SQL Editor
+-- SUPABASE DATABASE SETUP - COMPLETE
+-- Run this in Supabase SQL Editor (New Query)
 -- ============================================
 
--- Enable UUID extension (if not already enabled)
+-- Step 1: Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Drop table if exists (be careful with this in production!)
--- DROP TABLE IF EXISTS students;
+-- Step 2: Drop existing table if any (careful in production!)
+DROP TABLE IF EXISTS students CASCADE;
 
--- Create students table
-CREATE TABLE IF NOT EXISTS students (
+-- Step 3: Create students table with ALL columns
+CREATE TABLE students (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS students (
     address TEXT,
 
     -- Programme Information
-    programme TEXT NOT NULL, -- 'Honours' or 'General'
-    stream TEXT NOT NULL, -- 'BA', 'BSc', 'BCom'
-    department TEXT, -- 'Bachelor of Arts', 'Bachelor of Science', 'Bachelor of Commerce'
+    programme TEXT NOT NULL,
+    stream TEXT NOT NULL,
+    department TEXT,
     roll_no TEXT NOT NULL UNIQUE,
     session TEXT DEFAULT '2026',
 
@@ -61,30 +61,22 @@ CREATE TABLE IF NOT EXISTS students (
     aec_sem3 TEXT
 );
 
--- Create index on roll_no for faster lookups
-CREATE INDEX IF NOT EXISTS idx_students_roll_no ON students(roll_no);
+-- Step 4: Create indexes for better performance
+CREATE INDEX idx_students_roll_no ON students(roll_no);
+CREATE INDEX idx_students_programme_stream ON students(programme, stream);
 
--- Create index on programme and stream for filtering
-CREATE INDEX IF NOT EXISTS idx_students_programme_stream ON students(programme, stream);
-
--- ============================================
--- ROW LEVEL SECURITY (RLS) SETUP
--- ============================================
-
--- Enable RLS on the table
+-- Step 5: Enable Row Level Security (RLS)
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 
--- Create policy to allow all operations (for development/internal tool)
--- WARNING: In production, restrict this properly!
+-- Step 6: Create policy for anonymous access (for internal tool)
 CREATE POLICY "Allow all operations" ON students
     FOR ALL
     TO anon, authenticated
     USING (true)
     WITH CHECK (true);
 
--- ============================================
--- VERIFY TABLE CREATION
--- ============================================
-SELECT * FROM information_schema.columns 
-WHERE table_name = 'students' 
+-- Step 7: Verify table creation
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name = 'students'
 ORDER BY ordinal_position;
