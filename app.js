@@ -54,10 +54,8 @@ const rollCodes = {
 function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
     document.getElementById(tabName + '-tab').classList.add('active');
     event.target.classList.add('active');
-
     if (tabName === 'master') loadStudents();
     if (tabName === 'idcard') loadIdCardGrid();
 }
@@ -102,7 +100,7 @@ function handleProgrammeChange() {
         document.getElementById('secHonours').classList.add('hidden');
         document.getElementById('secGeneral').classList.remove('hidden');
         document.getElementById('minor3Row').classList.remove('hidden');
-        document.getElementById('minor3').required = true;
+        document.getElementById('minor3').required = false;
     }
     generateRollNo();
 }
@@ -134,14 +132,12 @@ function handleStreamChange() {
     if (stream === 'BCom' && programme === 'Honours') {
         majorSelect.value = 'Accountancy';
         handleMajorChange();
-
         document.getElementById('honSecSem1Group').classList.add('hidden');
         document.getElementById('honSecSem2Group').classList.add('hidden');
         document.getElementById('honSecSem3Group').classList.add('hidden');
         document.getElementById('bcomHonSecSem1Group').classList.remove('hidden');
         document.getElementById('bcomHonSecSem2Group').classList.remove('hidden');
         document.getElementById('bcomHonSecSem3Group').classList.remove('hidden');
-
         document.getElementById('bcomHonSecSem1').value = bcomHonoursSEC.secSem1;
         document.getElementById('bcomHonSecSem2').value = bcomHonoursSEC.secSem2;
         document.getElementById('bcomHonSecSem3').value = bcomHonoursSEC.secSem3;
@@ -155,7 +151,11 @@ function handleStreamChange() {
     }
 
     if (stream === 'BCom' && programme === 'General') {
+        // BCom General: minor section hide, required false
         document.getElementById('minorSection').classList.add('hidden');
+        document.getElementById('minor1').required = false;
+        document.getElementById('minor2').required = false;
+        document.getElementById('minor3').required = false;
 
         document.getElementById('secGenSem5Group').classList.add('hidden');
         document.getElementById('secGenSem6Group').classList.add('hidden');
@@ -204,8 +204,7 @@ function enableMDCGeneral() {
 }
 
 // ============================================
-// HONOURS DROPDOWN VALIDATION (MERGED & IMPROVED)
-// Combines Doc1 full logic + Doc2 MDC exclusion improvement
+// HONOURS DROPDOWN VALIDATION
 // ============================================
 function updateHonoursDropdowns() {
     const stream = document.getElementById('stream').value;
@@ -218,7 +217,6 @@ function updateHonoursDropdowns() {
     const m1Val = m1Select.value;
     const m2Val = m2Select.value;
 
-    // Refresh Minor 1 — exclude Major
     m1Select.innerHTML = '<option value="">-- Select Minor 1 --</option>';
     subjects[stream].minor.forEach(sub => {
         if (sub !== major) {
@@ -229,7 +227,6 @@ function updateHonoursDropdowns() {
         }
     });
 
-    // Refresh Minor 2 — exclude Major and Minor 1
     m2Select.innerHTML = '<option value="">-- Select Minor 2 --</option>';
     subjects[stream].minor.forEach(sub => {
         if (sub !== major && sub !== m1Select.value) {
@@ -237,8 +234,6 @@ function updateHonoursDropdowns() {
         }
     });
 
-    // Refresh MDC Sem I, II, III — exclude Major, Minor 1, Minor 2, and other MDC picks
-    // (Doc2 improvement: MDC fields also exclude Major and Minors)
     ['mdcSem1', 'mdcSem2', 'mdcSem3'].forEach(id => {
         const select = document.getElementById(id);
         const currentVal = select.value;
@@ -252,8 +247,7 @@ function updateHonoursDropdowns() {
 }
 
 // ============================================
-// MAJOR CHANGE HANDLER (MERGED)
-// Doc1: generateRollNo call + Doc2: auto-fill SEC Sem 1 & 2
+// MAJOR CHANGE HANDLER
 // ============================================
 function handleMajorChange() {
     const major = document.getElementById('majorSubject').value;
@@ -262,7 +256,6 @@ function handleMajorChange() {
 
     if (!major) return;
 
-    // Auto-fill SEC Sem I and II with Major subject (Doc2 improvement)
     if (programme === 'Honours' && stream !== 'BCom') {
         document.getElementById('secSem1').value = major;
         document.getElementById('secSem2').value = major;
@@ -299,7 +292,6 @@ function handleMinor1Change() {
                 minor3Select.innerHTML += `<option value="${sub}">${sub}</option>`;
             }
         });
-
         document.getElementById('secGenSem3').value = minor1;
         document.getElementById('secGenSem4').value = minor1;
     }
@@ -401,7 +393,6 @@ function updateSecGenSem5Options() {
     if (minor3) secGenSem6.innerHTML += `<option value="${minor3}">${minor3} (Minor 3)</option>`;
 }
 
-// SEC Gen Sem 5 auto-mirrors to Sem 6
 function handleSecGenSem5Change() {
     const sem5Val = document.getElementById('secGenSem5').value;
     const sem6Select = document.getElementById('secGenSem6');
@@ -521,6 +512,9 @@ function populateMinorSubjects(stream) {
 
     if (stream === 'BCom') {
         document.getElementById('minorSection').classList.add('hidden');
+        document.getElementById('minor1').required = false;
+        document.getElementById('minor2').required = false;
+        document.getElementById('minor3').required = false;
     }
 }
 
@@ -540,7 +534,6 @@ function populateMDC() {
 // ============================================
 function resetDependentFields() {
     document.getElementById('stream').value = '';
-
     document.getElementById('majorSubject').innerHTML = '<option value="">-- Select Major Subject --</option>';
     document.getElementById('minor1').innerHTML = '<option value="">-- Select --</option>';
     document.getElementById('minor2').innerHTML = '<option value="">-- Select --</option>';
@@ -572,11 +565,16 @@ function resetDependentFields() {
     document.getElementById('bcomHonSecSem1Group').classList.add('hidden');
     document.getElementById('bcomHonSecSem2Group').classList.add('hidden');
     document.getElementById('bcomHonSecSem3Group').classList.add('hidden');
-
     document.getElementById('secGenSem5Group').classList.remove('hidden');
     document.getElementById('secGenSem6Group').classList.remove('hidden');
     document.getElementById('bcomSecGenSem5Group').classList.add('hidden');
     document.getElementById('bcomSecGenSem6Group').classList.add('hidden');
+
+    // সব required false করো reset-এ
+    document.getElementById('majorSubject').required = false;
+    document.getElementById('minor1').required = false;
+    document.getElementById('minor2').required = false;
+    document.getElementById('minor3').required = false;
 }
 
 // ============================================
@@ -624,7 +622,22 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     const programme = document.getElementById('programme').value;
     const stream = document.getElementById('stream').value;
 
-    // Validation: Minor 1 and Minor 2 cannot be same
+    // সব hidden field-এর required সরাও
+    document.getElementById('majorSubject').required = false;
+    document.getElementById('minor1').required = false;
+    document.getElementById('minor2').required = false;
+    document.getElementById('minor3').required = false;
+
+    // Honours-এ BCom ছাড়া Major validate করো
+    if (programme === 'Honours' && stream !== 'BCom') {
+        const major = document.getElementById('majorSubject').value;
+        if (!major) {
+            showMessage('Error: Please select Major Subject!', 'error');
+            return;
+        }
+    }
+
+    // Minor 1 & 2 same হলে error
     if (programme === 'Honours' && stream !== 'BCom') {
         const minor1 = document.getElementById('minor1').value;
         const minor2 = document.getElementById('minor2').value;
@@ -652,6 +665,19 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         secGenSem6Val = document.getElementById('secGenSem6').value;
     }
 
+    // BCom General-এ minor values null
+    const minor1Val = (stream === 'BCom' && programme === 'General') ? null : (document.getElementById('minor1').value || null);
+    const minor2Val = (stream === 'BCom' && programme === 'General') ? null : (document.getElementById('minor2').value || null);
+    const minor3Val = (stream === 'BCom' && programme === 'General') ? null : (document.getElementById('minor3').value || null);
+
+    // BCom General-এ sec_gen_sem3/4 fixed values থেকে নাও
+    const secGenSem3Val = (stream === 'BCom' && programme === 'General')
+        ? bcomGeneralSEC.secGenSem3
+        : (programme === 'General' ? (document.getElementById('minor1').value || null) : null);
+    const secGenSem4Val = (stream === 'BCom' && programme === 'General')
+        ? bcomGeneralSEC.secGenSem4
+        : (programme === 'General' ? (document.getElementById('minor1').value || null) : null);
+
     const studentData = {
         student_name: document.getElementById('studentName').value.trim(),
         father_name: document.getElementById('fatherName').value.trim(),
@@ -666,27 +692,27 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         emergency_contact: document.getElementById('emergencyContact').value.trim(),
         address: document.getElementById('address').value.trim(),
         major_subject: document.getElementById('majorSubject').value || null,
-        minor_1: document.getElementById('minor1').value || null,
-        minor_2: document.getElementById('minor2').value || null,
-        minor_3: document.getElementById('minor3').value || null,
+        minor_1: minor1Val,
+        minor_2: minor2Val,
+        minor_3: minor3Val,
         mdc_sem1: document.getElementById('mdcSem1').value || null,
         mdc_sem2: document.getElementById('mdcSem2').value || null,
         mdc_sem3: document.getElementById('mdcSem3').value || null,
         mdc_gen_sem4: document.getElementById('mdcGenSem4').value || null,
         mdc_gen_sem5: document.getElementById('mdcGenSem5').value || null,
         mdc_gen_sem6: document.getElementById('mdcGenSem6').value || null,
-        sec_sem1: secSem1Val || (programme === 'Honours' ? document.getElementById('majorSubject').value : document.getElementById('minor1').value),
-        sec_sem2: secSem2Val || (programme === 'Honours' ? document.getElementById('majorSubject').value : document.getElementById('minor1').value),
+        sec_sem1: secSem1Val || null,
+        sec_sem2: secSem2Val || null,
         sec_sem3: secSem3Val || null,
-        sec_gen_sem3: programme === 'General' ? document.getElementById('minor1').value : null,
-        sec_gen_sem4: programme === 'General' ? document.getElementById('minor1').value : null,
+        sec_gen_sem3: secGenSem3Val,
+        sec_gen_sem4: secGenSem4Val,
         sec_gen_sem5: secGenSem5Val || null,
         sec_gen_sem6: secGenSem6Val || null,
         vac_sem1: 'ENVS',
         vac_sem2: 'Cyber Security',
-        aec_sem1: 'English',
-        aec_sem2: 'English',
-        aec_sem3: document.getElementById('aecSem3').value || null
+        aec_sem1: document.getElementById('aecSem1')?.value || 'English',
+        aec_sem2: document.getElementById('aecSem2')?.value || 'English',
+        aec_sem3: document.getElementById('aecSem3')?.value || null
     };
 
     try {
@@ -698,7 +724,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         if (error) throw error;
 
         showMessage('Student data saved successfully! Roll No: ' + studentData.roll_no, 'success');
-
         window.lastSavedStudent = studentData;
         document.getElementById('printLastBtn').style.display = 'inline-block';
 
@@ -717,7 +742,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         document.getElementById('bcomHonSecSem1Group').classList.add('hidden');
         document.getElementById('bcomHonSecSem2Group').classList.add('hidden');
         document.getElementById('bcomHonSecSem3Group').classList.add('hidden');
-
         document.getElementById('secGenSem5Group').classList.remove('hidden');
         document.getElementById('secGenSem6Group').classList.remove('hidden');
         document.getElementById('bcomSecGenSem5Group').classList.add('hidden');
@@ -731,15 +755,22 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         document.getElementById('mdcGenSem6').innerHTML = '<option value="">-- Select MDC Sem V first --</option>';
 
         document.getElementById('stream').value = '';
-        ['majorSubject', 'minor1', 'minor2', 'minor3'].forEach(id => { document.getElementById(id).value = ''; });
+        ['majorSubject', 'minor1', 'minor2', 'minor3'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
         ['secSem1', 'secSem2', 'secGenSem3', 'secGenSem4', 'secGenSem5', 'secGenSem6',
-         'bcomSecGenSem5', 'bcomSecGenSem6', 'bcomHonSecSem1', 'bcomHonSecSem2', 'bcomHonSecSem3', 'secSem3'].forEach(id => {
+         'bcomSecGenSem5', 'bcomSecGenSem6', 'bcomHonSecSem1', 'bcomHonSecSem2',
+         'bcomHonSecSem3', 'secSem3'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
+
         document.getElementById('aecSem3').value = 'English';
         document.getElementById('minor3Row').classList.add('hidden');
         document.getElementById('minor3').required = false;
+        document.getElementById('majorSubject').required = false;
+        document.getElementById('minor1').required = false;
+        document.getElementById('minor2').required = false;
 
     } catch (error) {
         showMessage('Error: ' + error.message, 'error');
@@ -796,7 +827,6 @@ async function loadStudents() {
 
 async function deleteStudent(id) {
     if (!confirm('Are you sure you want to delete this student?')) return;
-
     try {
         const { error } = await supabaseClient.from('students').delete().eq('id', id);
         if (error) throw error;
@@ -827,7 +857,6 @@ async function printStudentById(id) {
         printWindow.document.write(generateA4PrintHTML(data));
         printWindow.document.close();
         setTimeout(() => { printWindow.print(); }, 500);
-
     } catch (error) {
         console.error('Print error:', error);
         showMessage('Print failed: ' + error.message, 'error');
@@ -841,7 +870,6 @@ function generateA4PrintHTML(student) {
     const programme = student.programme;
     const stream = student.stream;
 
-    // Minor HTML
     let minorHTML = '';
     if (stream === 'BCom') {
         minorHTML = `
@@ -858,7 +886,6 @@ function generateA4PrintHTML(student) {
             <div class="data-row"><span class="data-label">Minor 3:</span><span class="data-value">${student.minor_3 || 'N/A'}</span></div>`;
     }
 
-    // MDC HTML
     let mdcHTML = '';
     if (programme === 'Honours') {
         mdcHTML = `
@@ -872,7 +899,6 @@ function generateA4PrintHTML(student) {
             <div class="data-row"><span class="data-label">Semester VI:</span><span class="data-value">${student.mdc_gen_sem6 || 'N/A'}</span></div>`;
     }
 
-    // SEC HTML
     let secHTML = '';
     if (stream === 'BCom' && programme === 'Honours') {
         secHTML = `
@@ -901,8 +927,8 @@ function generateA4PrintHTML(student) {
     const vacAecHTML = `
         <div class="data-row"><span class="data-label">VAC Semester I:</span><span class="data-value">ENVS</span></div>
         <div class="data-row"><span class="data-label">VAC Semester II:</span><span class="data-value">Cyber Security</span></div>
-        <div class="data-row"><span class="data-label">AEC Semester I:</span><span class="data-value">English</span></div>
-        <div class="data-row"><span class="data-label">AEC Semester II:</span><span class="data-value">English</span></div>
+        <div class="data-row"><span class="data-label">AEC Semester I:</span><span class="data-value">${student.aec_sem1 || 'English'}</span></div>
+        <div class="data-row"><span class="data-label">AEC Semester II:</span><span class="data-value">${student.aec_sem2 || 'English'}</span></div>
         <div class="data-row"><span class="data-label">AEC Semester III:</span><span class="data-value">${student.aec_sem3 || 'N/A'}</span></div>`;
 
     return `<!DOCTYPE html>
@@ -1022,7 +1048,6 @@ async function exportToExcel() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Students");
         XLSX.writeFile(wb, "Master_Students_Data.xlsx");
-
     } catch (error) {
         console.error('Export error:', error);
     }
@@ -1061,7 +1086,6 @@ async function loadIdCardGrid() {
         });
 
         setupGridSelection();
-
     } catch (error) {
         console.error('Error loading ID card grid:', error);
     }
@@ -1138,7 +1162,6 @@ async function exportIdCardToExcel() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "ID_Card_Data");
         XLSX.writeFile(wb, "ID_Card_Data.xlsx");
-
     } catch (error) {
         console.error('Export error:', error);
         showMessage('Export failed: ' + error.message, 'error');
@@ -1161,7 +1184,6 @@ async function printAllStudents() {
         printWindow.document.write(generatePrintHTML(data));
         printWindow.document.close();
         setTimeout(() => { printWindow.print(); }, 500);
-
     } catch (error) {
         console.error('Print error:', error);
         showMessage('Print failed: ' + error.message, 'error');
@@ -1291,7 +1313,7 @@ function generateStudentCard(student) {
 
     const vacAecHTML = `
         <div class="subject-item"><span class="sem">VAC:</span> <span class="subj">ENVS, Cyber</span></div>
-        <div class="subject-item"><span class="sem">AEC:</span> <span class="subj">Eng, Eng, ${student.aec_sem3 || 'N/A'}</span></div>`;
+        <div class="subject-item"><span class="sem">AEC:</span> <span class="subj">${student.aec_sem1 || 'Eng'}, ${student.aec_sem2 || 'Eng'}, ${student.aec_sem3 || 'N/A'}</span></div>`;
 
     return `
         <div class="student-card">
