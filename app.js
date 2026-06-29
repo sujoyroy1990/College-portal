@@ -12,7 +12,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const subjects = {
     BA: {
         major: ['Bengali', 'English', 'Education', 'History', 'Journalism & Mass Communication', 'Philosophy', 'Political Science', 'Sanskrit', 'Sociology'],
-        minor: ['Bengali', 'English', 'Education', 'History', 'Journalism & Mass Communication', 'Philosophy', 'Political Science', 'Sanskrit', 'Sociology', 'Psychology', 'Economics']
+        minor: ['Bengali', 'English', 'Education', 'History', 'Journalism & Mass Communication', 'Philosophy', 'Political Science', 'Sanskrit', 'Sociology', 'Psychology', 'Economics', 'Geography']
     },
     BSc: {
         major: ['Anthropology', 'Botany', 'Chemistry', 'Computer Science', 'Economics', 'Geography', 'Mathematics', 'Physics', 'Zoology'],
