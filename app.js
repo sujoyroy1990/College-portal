@@ -16,7 +16,7 @@ const subjects = {
     },
     BSc: {
         major: ['Anthropology', 'Botany', 'Chemistry', 'Computer Science', 'Economics', 'Geography', 'Mathematics', 'Physics', 'Zoology'],
-        minor: ['Anthropology', 'Botany', 'Chemistry', 'Computer Science', 'Economics', 'Geography', 'Mathematics', 'Physics', 'Zoology', 'Micro Biology', 'Food and Nutrition', 'Psychology', 'Political Science']
+        minor: ['Anthropology', 'Botany', 'Chemistry', 'Computer Science', 'Economics', 'Geography', 'Mathematics', 'Physics', 'Zoology', 'Micro Biology', 'Food and Nutrition', 'Psychology', 'Political Science', 'History']
     },
     BCom: {
         major: ['Accountancy'],
