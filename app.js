@@ -1412,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 let editingStudentId = null;
 
-async function editStudent(id) {
+window.editStudent = async function(id) {
     try {
         const { data, error } = await supabaseClient
             .from('students')
@@ -1426,8 +1426,19 @@ async function editStudent(id) {
         // এডিট আইডি সেভ করে রাখা
         editingStudentId = data.id;
 
-        // ট্যাব সুইচ করে ডাটা এন্ট্রি ফর্মে যাওয়া (যদি ট্যাব সিস্টেম থাকে)
-        // showTab('entry'); // আপনার যদি ট্যাব ফাংশন থাকে তবে এটি আনকমেন্ট করুন
+        // ট্যাব সুইচ করে ডাটা এন্ট্রি ফর্মে যাওয়া (আপনার প্রজেক্টে এন্ট্রি ট্যাবের নাম 'entry' হলে এটি কাজ করবে)
+        // যদি আপনার এন্ট্রি ট্যাবের নাম অন্য কিছু হয় (যেমন 'form' বা 'home'), তবে সেই নাম দেবেন
+        const entryTabBtn = document.querySelector('.tab-btn'); // অথবা এন্ট্রি ট্যাবের নির্দিষ্ট বাটন বা ফাংশন
+        if (typeof showTab === 'function') {
+            // যদি আপনার প্রথম ট্যাবটির নাম 'entry' বা অন্য কিছু হয়, সেটি এখানে দিন। যেমন: showTab('entry');
+            // আপাতত ট্যাব পরিবর্তনের জন্য নিচের লাইনটি ব্যবহার করতে পারেন:
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // ধরে নিচ্ছি প্রথম ট্যাবটি ডাটা এন্ট্রি ফর্ম
+            const entryTab = document.getElementById('entry-tab') || document.querySelector('.tab-content');
+            if (entryTab) entryTab.classList.add('active');
+        }
 
         // ফর্ম ফিল্ডগুলোতে ডাটা বসানো
         document.getElementById('studentName').value = data.student_name || '';
@@ -1485,6 +1496,9 @@ async function editStudent(id) {
         if (submitBtn) submitBtn.textContent = 'Update Student Data';
 
         showMessage('Student data loaded for editing. Make changes and submit.', 'success');
+        
+        // পেcroll করে ফর্মের দিকে নিয়ে যাওয়া
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
         console.error('Error loading student for edit:', error);
         showMessage('Error: ' + error.message, 'error');
