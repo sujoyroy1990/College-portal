@@ -1054,7 +1054,7 @@ function generateA4PrintHTML(student) {
     </script>
 </body>
 </html>`;
-
+}
 // ============================================
 // EXPORT MASTER DATA TO EXCEL
 // ============================================
