@@ -309,8 +309,8 @@ tr:hover {
         padding: 6px;
     }
     /* সার্চ হাইলাইট স্টাইল */
+/* সার্চ হাইলাইট স্টাইল */
 .highlight-row {
-    background-color: #fff9c4 !important; /* হালকা হলুদ বা গোল্ডেন ব্যাকগ্রাউন্ড */
-    transition: background-color 0.3s ease;
-    }
+    background-color: #fff9c4 !important; /* হালকা হলুদ ব্যাকগ্রাউন্ড */
+}
 }

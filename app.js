@@ -1125,34 +1125,38 @@ function cancelEdit() {
 // ============================================
 // SEARCH & HIGHLIGHT STUDENTS FUNCTION
 // ============================================
+// ============================================
+// SEARCH & HIGHLIGHT STUDENTS FUNCTION
+// ============================================
 function filterStudents() {
     const input = document.getElementById('searchInput');
+    if (!input) return;
     const filter = input.value.toLowerCase().trim();
     const table = document.getElementById('studentsTable');
+    if (!table) return;
     const tr = table.getElementsByTagName('tr');
 
-    // লুপ চালিয়ে টেবিলের প্রতিটি রো চেক করা (হেডার বাদ দিয়ে i = 1 থেকে শুরু)
     for (let i = 1; i < tr.length; i++) {
-        const tdRoll = tr[i].getElementsByTagName('td')[0]; // Roll No
-        const tdName = tr[i].getElementsByTagName('td')[1]; // Student Name
-        const tdMobile = tr[i].getElementsByTagName('td')[6]; // Mobile No
+        const tdRoll = tr[i].getElementsByTagName('td')[0];   // Roll No (Index 0)
+        const tdName = tr[i].getElementsByTagName('td')[1];   // Student Name (Index 1)
+        const tdMobile = tr[i].getElementsByTagName('td')[6]; // Mobile (Index 6)
 
         if (tdRoll || tdName || tdMobile) {
-            const rollValue = tdRoll ? tdRoll.textContent.toLowerCase() : '';
-            const nameValue = tdName ? tdName.textContent.toLowerCase() : '';
-            const mobileValue = tdMobile ? tdMobile.textContent.toLowerCase() : '';
+            const rollText = tdRoll ? tdRoll.textContent.toLowerCase() : '';
+            const nameText = tdName ? tdName.textContent.toLowerCase() : '';
+            const mobileText = tdMobile ? tdMobile.textContent.toLowerCase() : '';
 
-            // যদি ফিল্টার বক্স খালি থাকে, হাইলাইট ও ফিল্টার রিসেট হবে
+            // যদি সার্চ বক্স খালি থাকে
             if (filter === '') {
                 tr[i].style.display = '';
                 tr[i].classList.remove('highlight-row');
             } 
             // যদি রোল, নাম বা মোবাইলের সাথে মিলে যায়
-            else if (rollValue.includes(filter) || nameValue.includes(filter) || mobileValue.includes(filter)) {
+            else if (rollText.includes(filter) || nameText.includes(filter) || mobileText.includes(filter)) {
                 tr[i].style.display = '';
-                tr[i].classList.add('highlight-row'); // মিলে যাওয়া ডাটা হাইলাইট হবে
+                tr[i].classList.add('highlight-row');
             } else {
-                tr[i].style.display = 'none'; // না মিললে হাইড হয়ে যাবে
+                tr[i].style.display = 'none';
                 tr[i].classList.remove('highlight-row');
             }
         }

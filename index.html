@@ -305,16 +305,15 @@
 
         <div id="master-tab" class="tab-content">
             <h2>Master Data List</h2>
-            <div class="actions">
+            <div class="actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button onclick="loadStudents()" class="btn-secondary">Refresh Data</button>
                 <button onclick="exportToExcel()" class="btn-success">Export to Excel</button>
                 <button onclick="printAllStudents()" class="btn-primary">🖨️ Print All Students</button>
-                <!-- সার্চ ইনপুট বক্স -->
-                <input type="text" id="searchInput" onkeyup="filterStudents()" placeholder="🔍 Search by Roll No, Name, Mobile..." style="padding: 8px 12px; width: 280px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
-                </div>
-                <div class="table-wrapper">
-                <table id="studentsTable">
+                
+                <!-- সঠিক সার্চ ইনপুট -->
+                <input type="text" id="searchInput" oninput="filterStudents()" placeholder="🔍 Search by Roll No, Name, Mobile..." style="padding: 8px 12px; width: 280px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
             </div>
+            
             <div class="table-wrapper">
                 <table id="studentsTable">
                     <thead>
@@ -333,7 +332,6 @@
                 </table>
             </div>
         </div>
-
         <div id="idcard-tab" class="tab-content">
             <h2>ID Card Data</h2>
             <div class="actions">
