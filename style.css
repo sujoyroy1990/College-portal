@@ -22,7 +22,7 @@ body {
 
 h1 {
     text-align: center;
-    color: #1a1a2e;
+    color: #f6f6f8;
     margin-bottom: 30px;
     font-size: 28px;
 }
@@ -307,5 +307,10 @@ tr:hover {
     }
     .data-grid th, .data-grid td {
         padding: 6px;
+    }
+    /* সার্চ হাইলাইট স্টাইল */
+.highlight-row {
+    background-color: #fff9c4 !important; /* হালকা হলুদ বা গোল্ডেন ব্যাকগ্রাউন্ড */
+    transition: background-color 0.3s ease;
     }
 }

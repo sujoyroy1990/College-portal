@@ -1122,3 +1122,39 @@ function cancelEdit() {
     if (submitBtn) submitBtn.textContent = 'Save Student Data';
     showTab('master'); // মাস্টার ট্যাবে ফিরিয়ে নিয়ে যাবে
 }
+// ============================================
+// SEARCH & HIGHLIGHT STUDENTS FUNCTION
+// ============================================
+function filterStudents() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase().trim();
+    const table = document.getElementById('studentsTable');
+    const tr = table.getElementsByTagName('tr');
+
+    // লুপ চালিয়ে টেবিলের প্রতিটি রো চেক করা (হেডার বাদ দিয়ে i = 1 থেকে শুরু)
+    for (let i = 1; i < tr.length; i++) {
+        const tdRoll = tr[i].getElementsByTagName('td')[0]; // Roll No
+        const tdName = tr[i].getElementsByTagName('td')[1]; // Student Name
+        const tdMobile = tr[i].getElementsByTagName('td')[6]; // Mobile No
+
+        if (tdRoll || tdName || tdMobile) {
+            const rollValue = tdRoll ? tdRoll.textContent.toLowerCase() : '';
+            const nameValue = tdName ? tdName.textContent.toLowerCase() : '';
+            const mobileValue = tdMobile ? tdMobile.textContent.toLowerCase() : '';
+
+            // যদি ফিল্টার বক্স খালি থাকে, হাইলাইট ও ফিল্টার রিসেট হবে
+            if (filter === '') {
+                tr[i].style.display = '';
+                tr[i].classList.remove('highlight-row');
+            } 
+            // যদি রোল, নাম বা মোবাইলের সাথে মিলে যায়
+            else if (rollValue.includes(filter) || nameValue.includes(filter) || mobileValue.includes(filter)) {
+                tr[i].style.display = '';
+                tr[i].classList.add('highlight-row'); // মিলে যাওয়া ডাটা হাইলাইট হবে
+            } else {
+                tr[i].style.display = 'none'; // না মিললে হাইড হয়ে যাবে
+                tr[i].classList.remove('highlight-row');
+            }
+        }
+    }
+}

@@ -309,6 +309,11 @@
                 <button onclick="loadStudents()" class="btn-secondary">Refresh Data</button>
                 <button onclick="exportToExcel()" class="btn-success">Export to Excel</button>
                 <button onclick="printAllStudents()" class="btn-primary">🖨️ Print All Students</button>
+                <!-- সার্চ ইনপুট বক্স -->
+                <input type="text" id="searchInput" onkeyup="filterStudents()" placeholder="🔍 Search by Roll No, Name, Mobile..." style="padding: 8px 12px; width: 280px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div class="table-wrapper">
+                <table id="studentsTable">
             </div>
             <div class="table-wrapper">
                 <table id="studentsTable">
