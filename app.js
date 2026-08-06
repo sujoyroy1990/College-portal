@@ -1115,3 +1115,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStudents();
     loadIdCardGrid();
 });
+function cancelEdit() {
+    editingStudentId = null;
+    document.getElementById('studentForm').reset();
+    const submitBtn = document.querySelector('#studentForm button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Save Student Data';
+    showTab('master'); // মাস্টার ট্যাবে ফিরিয়ে নিয়ে যাবে
+}
