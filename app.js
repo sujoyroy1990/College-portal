@@ -973,20 +973,47 @@ function generateA4PrintHTML(student) {
     <meta charset="UTF-8">
     <title>Print - ${student.student_name}</title>
     <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', Courier, monospace; background: #e0e0e0; padding: 20mm; display: flex; justify-content: center; }
-        .a4-page { width: 210mm; min-height: 297mm; background: white; padding: 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .outline-box { border: 2px solid #000; width: 100%; display: flex; flex-direction: column; }
-        .top-bar { background-color: #000 !important; color: #fff !important; text-align: center; padding: 12px; font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; border-bottom: 2px solid #000; }
-        .student-header { text-align: center; padding: 20mm; border-bottom: 2px solid #000; background: #fff; }
-        .student-header h2 { font-size: 22px; margin-bottom: 5px; color: #000; text-transform: uppercase; }
-        .student-header p { font-size: 16px; font-weight: bold; color: #333; }
-        .data-section { border-bottom: 2px solid #000; padding-bottom: 15px; }
-        .data-section:last-child { border-bottom: none; padding-bottom: 20px; }
-        .section-title { font-weight: bold; font-size: 16px; padding: 15px 20px 10px 20px; text-transform: uppercase; color: #000; }
-        .data-row { display: flex; padding: 4px 20px; font-size: 15px; font-family: Arial, sans-serif; }
-        .data-label { font-weight: bold; width: 200px; color: #000; }
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            background: #e0e0e0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 10mm;
+        }
+        .a4-page { 
+            width: 210mm; 
+            min-height: 297mm; 
+            max-height: 297mm;
+            background: white; 
+            padding: 10mm; 
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            overflow: hidden;
+        }
+        .outline-box { border: 2px solid #000; width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .top-bar { background-color: #000 !important; color: #fff !important; text-align: center; padding: 8px; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; border-bottom: 2px solid #000; }
+        .student-header { text-align: center; padding: 10px; border-bottom: 2px solid #000; background: #fff; }
+        .student-header h2 { font-size: 20px; margin-bottom: 3px; color: #000; text-transform: uppercase; }
+        .student-header p { font-size: 14px; font-weight: bold; color: #333; }
+        .data-section { border-bottom: 2px solid #000; padding-bottom: 8px; }
+        .data-section:last-child { border-bottom: none; padding-bottom: 10px; }
+        .section-title { font-weight: bold; font-size: 14px; padding: 10px 15px 5px 15px; text-transform: uppercase; color: #000; }
+        .data-row { display: flex; padding: 3px 15px; font-size: 13px; font-family: Arial, sans-serif; }
+        .data-label { font-weight: bold; width: 180px; color: #000; }
         .data-value { flex: 1; color: #222; }
+
+        @media print {
+            body { background: white; padding: 0; display: block; }
+            .a4-page { width: 210mm; height: 297mm; max-height: 297mm; padding: 8mm; box-shadow: none; margin: 0; }
+            .outline-box { border: 2px solid #000; }
+        }
     </style>
 </head>
 <body>
@@ -1027,7 +1054,6 @@ function generateA4PrintHTML(student) {
     </script>
 </body>
 </html>`;
-}
 
 // ============================================
 // EXPORT MASTER DATA TO EXCEL
