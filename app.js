@@ -715,15 +715,36 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         aec_sem3: document.getElementById('aecSem3')?.value || null
     };
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('students')
-            .insert([studentData])
-            .select();
+   try {
+        let response;
+        if (editingStudentId) {
+            // যদি এডিট মোড চালু থাকে, তবে ডেটা আপডেট হবে
+            const { data, error } = await supabaseClient
+                .from('students')
+                .update(studentData)
+                .eq('id', editingStudentId)
+                .select();
 
-        if (error) throw error;
+            if (error) throw error;
+            response = data;
+            showMessage('Student data updated successfully! Roll No: ' + studentData.roll_no, 'success');
+            
+            // আপডেট শেষে এডিট মোড রিসেট করা এবং সাবমিট বাটনের নাম আগের মতো করা
+            editingStudentId = null;
+            const submitBtn = document.querySelector('#studentForm button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'Save Student Data';
+        } else {
+            // নতুন এন্ট্রি হলে ডেটা ইনসার্ট হবে
+            const { data, error } = await supabaseClient
+                .from('students')
+                .insert([studentData])
+                .select();
 
-        showMessage('Student data saved successfully! Roll No: ' + studentData.roll_no, 'success');
+            if (error) throw error;
+            response = data;
+            showMessage('Student data saved successfully! Roll No: ' + studentData.roll_no, 'success');
+        }
+
         window.lastSavedStudent = studentData;
         document.getElementById('printLastBtn').style.display = 'inline-block';
 
@@ -815,6 +836,7 @@ async function loadStudents() {
                 <td>${student.session}</td>
                 <td>${student.mobile_no}</td>
                 <td>
+                    <button onclick="editStudent('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;background-color:#f39c12;">✏️ Edit</button>
                     <button onclick="printStudentById('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;">🖨️ Print</button>
                     <button onclick="deleteStudent('${student.id}')" class="btn-secondary" style="padding:5px 10px;font-size:13px;">Delete</button>
                 </td>
@@ -1385,3 +1407,86 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStudents();
     loadIdCardGrid();
 });
+// ============================================
+// EDIT STUDENT DATA
+// ============================================
+let editingStudentId = null;
+
+async function editStudent(id) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('students')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        if (!data) { showMessage('Student not found!', 'error'); return; }
+
+        // এডিট আইডি সেভ করে রাখা
+        editingStudentId = data.id;
+
+        // ট্যাব সুইচ করে ডাটা এন্ট্রি ফর্মে যাওয়া (যদি ট্যাব সিস্টেম থাকে)
+        // showTab('entry'); // আপনার যদি ট্যাব ফাংশন থাকে তবে এটি আনকমেন্ট করুন
+
+        // ফর্ম ফিল্ডগুলোতে ডাটা বসানো
+        document.getElementById('studentName').value = data.student_name || '';
+        document.getElementById('fatherName').value = data.father_name || '';
+        document.getElementById('guardianName').value = data.guardian_name || '';
+        document.getElementById('mobileNo').value = data.mobile_no || '';
+        document.getElementById('programme').value = data.programme || '';
+        
+        // প্রোগ্রাম চেঞ্জ হ্যান্ডলার কল করে ডিপেন্ডেন্ট ফিল্ডগুলো ট্রিগার করা
+        handleProgrammeChange();
+        
+        document.getElementById('stream').value = data.stream || '';
+        handleStreamChange();
+
+        document.getElementById('rollNo').value = data.roll_no || '';
+        document.getElementById('bloodGroup').value = data.blood_group || '';
+        document.getElementById('emergencyContact').value = data.emergency_contact || '';
+        document.getElementById('address').value = data.address || '';
+
+        // মেজর ও মাইনর সাবজেক্ট সেট করা
+        setTimeout(() => {
+            if (document.getElementById('majorSubject')) {
+                document.getElementById('majorSubject').value = data.major_subject || '';
+                handleMajorChange();
+            }
+            if (document.getElementById('minor1')) {
+                document.getElementById('minor1').value = data.minor_1 || '';
+                handleMinor1Change();
+            }
+            if (document.getElementById('minor2')) {
+                document.getElementById('minor2').value = data.minor_2 || '';
+                handleMinor2Change();
+            }
+            if (document.getElementById('minor3')) {
+                document.getElementById('minor3').value = data.minor_3 || '';
+            }
+            
+            // MDC ও SEC ফিল্ডগুলো পূরণ করা
+            if (data.programme === 'Honours') {
+                if(document.getElementById('mdcSem1')) document.getElementById('mdcSem1').value = data.mdc_sem1 || '';
+                if(document.getElementById('mdcSem2')) document.getElementById('mdcSem2').value = data.mdc_sem2 || '';
+                if(document.getElementById('mdcSem3')) document.getElementById('mdcSem3').value = data.mdc_sem3 || '';
+                if(document.getElementById('secSem1')) document.getElementById('secSem1').value = data.sec_sem1 || '';
+                if(document.getElementById('secSem2')) document.getElementById('secSem2').value = data.sec_sem2 || '';
+                if(document.getElementById('secSem3')) document.getElementById('secSem3').value = data.sec_sem3 || '';
+            } else {
+                if(document.getElementById('mdcGenSem4')) document.getElementById('mdcGenSem4').value = data.mdc_gen_sem4 || '';
+                if(document.getElementById('mdcGenSem5')) document.getElementById('mdcGenSem5').value = data.mdc_gen_sem5 || '';
+                if(document.getElementById('mdcGenSem6')) document.getElementById('mdcGenSem6').value = data.mdc_gen_sem6 || '';
+            }
+        }, 300);
+
+        // সাবমিট বাটনের টেক্সট পরিবর্তন করে "Update" করা
+        const submitBtn = document.querySelector('#studentForm button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Update Student Data';
+
+        showMessage('Student data loaded for editing. Make changes and submit.', 'success');
+    } catch (error) {
+        console.error('Error loading student for edit:', error);
+        showMessage('Error: ' + error.message, 'error');
+    }
+}
