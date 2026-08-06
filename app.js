@@ -54,8 +54,19 @@ const rollCodes = {
 function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tabName + '-tab').classList.add('active');
-    event.target.classList.add('active');
+    
+    const targetTab = document.getElementById(tabName + '-tab');
+    if (targetTab) targetTab.classList.add('active');
+    
+    // ইভেন্ট ট্রিক হ্যান্ডেল করা (যদি ফাংশনটি সরাসরি বাটন ক্লিক ছাড়া কল করা হয়)
+    if (typeof event !== 'undefined' && event && event.target) {
+        event.target.classList.add('active');
+    } else {
+        // এডিট থেকে কল হলে প্রথম বাটন বা এন্ট্রি বাটন সিলেক্ট করা
+        const targetBtn = document.querySelector(`button[onclick*="${tabName}"]`);
+        if (targetBtn) targetBtn.classList.add('active');
+    }
+
     if (tabName === 'master') loadStudents();
     if (tabName === 'idcard') loadIdCardGrid();
 }
@@ -151,7 +162,6 @@ function handleStreamChange() {
     }
 
     if (stream === 'BCom' && programme === 'General') {
-        // BCom General: minor section hide, required false
         document.getElementById('minorSection').classList.add('hidden');
         document.getElementById('minor1').required = false;
         document.getElementById('minor2').required = false;
@@ -184,9 +194,6 @@ function handleStreamChange() {
     generateRollNo();
 }
 
-// ============================================
-// ENABLE / DISABLE MDC GENERAL
-// ============================================
 function disableMDCGeneral() {
     document.getElementById('mdcGenSem4').disabled = true;
     document.getElementById('mdcGenSem5').disabled = true;
@@ -203,9 +210,6 @@ function enableMDCGeneral() {
     populateMDCGeneral();
 }
 
-// ============================================
-// HONOURS DROPDOWN VALIDATION
-// ============================================
 function updateHonoursDropdowns() {
     const stream = document.getElementById('stream').value;
     const major = document.getElementById('majorSubject').value;
@@ -246,9 +250,6 @@ function updateHonoursDropdowns() {
     });
 }
 
-// ============================================
-// MAJOR CHANGE HANDLER
-// ============================================
 function handleMajorChange() {
     const major = document.getElementById('majorSubject').value;
     const programme = document.getElementById('programme').value;
@@ -265,9 +266,6 @@ function handleMajorChange() {
     generateRollNo();
 }
 
-// ============================================
-// MINOR CHANGE HANDLERS
-// ============================================
 function handleMinor1Change() {
     const minor1 = document.getElementById('minor1').value;
     const major = document.getElementById('majorSubject').value;
@@ -365,9 +363,6 @@ function checkMinorsAndEnableMDC() {
     }
 }
 
-// ============================================
-// SEC UPDATE FUNCTIONS
-// ============================================
 function updateSecSem3Options() {
     const minor1 = document.getElementById('minor1').value;
     const minor2 = document.getElementById('minor2').value;
@@ -410,9 +405,6 @@ function handleSecGenSem5Change() {
     }
 }
 
-// ============================================
-// MDC GENERAL POPULATION
-// ============================================
 function populateMDCGeneral() {
     ['mdcGenSem4', 'mdcGenSem5', 'mdcGenSem6'].forEach(id => {
         const select = document.getElementById(id);
@@ -494,9 +486,6 @@ function handleMDCGenSem5Change() {
     });
 }
 
-// ============================================
-// MINOR SUBJECTS & MDC HONOURS POPULATION
-// ============================================
 function populateMinorSubjects(stream) {
     if (!stream || !subjects[stream]) return;
 
@@ -529,9 +518,6 @@ function populateMDC() {
     });
 }
 
-// ============================================
-// RESET DEPENDENT FIELDS
-// ============================================
 function resetDependentFields() {
     document.getElementById('stream').value = '';
     document.getElementById('majorSubject').innerHTML = '<option value="">-- Select Major Subject --</option>';
@@ -570,16 +556,12 @@ function resetDependentFields() {
     document.getElementById('bcomSecGenSem5Group').classList.add('hidden');
     document.getElementById('bcomSecGenSem6Group').classList.add('hidden');
 
-    // সব required false করো reset-এ
     document.getElementById('majorSubject').required = false;
     document.getElementById('minor1').required = false;
     document.getElementById('minor2').required = false;
     document.getElementById('minor3').required = false;
 }
 
-// ============================================
-// AUTO ROLL NUMBER GENERATION
-// ============================================
 async function generateRollNo() {
     const programme = document.getElementById('programme').value;
     const stream = document.getElementById('stream').value;
@@ -614,7 +596,7 @@ async function generateRollNo() {
 }
 
 // ============================================
-// SAVE STUDENT DATA
+// SAVE / UPDATE STUDENT DATA
 // ============================================
 document.getElementById('studentForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -622,13 +604,11 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     const programme = document.getElementById('programme').value;
     const stream = document.getElementById('stream').value;
 
-    // সব hidden field-এর required সরাও
     document.getElementById('majorSubject').required = false;
     document.getElementById('minor1').required = false;
     document.getElementById('minor2').required = false;
     document.getElementById('minor3').required = false;
 
-    // Honours-এ BCom ছাড়া Major validate করো
     if (programme === 'Honours' && stream !== 'BCom') {
         const major = document.getElementById('majorSubject').value;
         if (!major) {
@@ -637,7 +617,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         }
     }
 
-    // Minor 1 & 2 same হলে error
     if (programme === 'Honours' && stream !== 'BCom') {
         const minor1 = document.getElementById('minor1').value;
         const minor2 = document.getElementById('minor2').value;
@@ -665,12 +644,10 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         secGenSem6Val = document.getElementById('secGenSem6').value;
     }
 
-    // BCom General-এ minor values null
     const minor1Val = (stream === 'BCom' && programme === 'General') ? null : (document.getElementById('minor1').value || null);
     const minor2Val = (stream === 'BCom' && programme === 'General') ? null : (document.getElementById('minor2').value || null);
     const minor3Val = (stream === 'BCom' && programme === 'General') ? null : (document.getElementById('minor3').value || null);
 
-    // BCom General-এ sec_gen_sem3/4 fixed values থেকে নাও
     const secGenSem3Val = (stream === 'BCom' && programme === 'General')
         ? bcomGeneralSEC.secGenSem3
         : (programme === 'General' ? (document.getElementById('minor1').value || null) : null);
@@ -715,83 +692,40 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         aec_sem3: document.getElementById('aecSem3')?.value || null
     };
 
-   try {
-        let response;
+    try {
         if (editingStudentId) {
-            // যদি এডিট মোড চালু থাকে, তবে ডেটা আপডেট হবে
-            const { data, error } = await supabaseClient
+            const { error } = await supabaseClient
                 .from('students')
                 .update(studentData)
-                .eq('id', editingStudentId)
-                .select();
+                .eq('id', editingStudentId);
 
             if (error) throw error;
-            response = data;
-            showMessage('Student data updated successfully! Roll No: ' + studentData.roll_no, 'success');
+            showMessage('Student data updated successfully!', 'success');
             
-            // আপডেট শেষে এডিট মোড রিসেট করা এবং সাবমিট বাটনের নাম আগের মতো করা
             editingStudentId = null;
             const submitBtn = document.querySelector('#studentForm button[type="submit"]');
             if (submitBtn) submitBtn.textContent = 'Save Student Data';
         } else {
-            // নতুন এন্ট্রি হলে ডেটা ইনসার্ট হবে
-            const { data, error } = await supabaseClient
+            const { error } = await supabaseClient
                 .from('students')
-                .insert([studentData])
-                .select();
+                .insert([studentData]);
 
             if (error) throw error;
-            response = data;
             showMessage('Student data saved successfully! Roll No: ' + studentData.roll_no, 'success');
         }
 
         window.lastSavedStudent = studentData;
-        document.getElementById('printLastBtn').style.display = 'inline-block';
+        const printBtn = document.getElementById('printLastBtn');
+        if (printBtn) printBtn.style.display = 'inline-block';
 
-        // Full form reset
         document.getElementById('studentForm').reset();
         document.getElementById('session').value = '2026';
 
         ['streamSection', 'majorSection', 'minorSection', 'mdcSection', 'secSection', 'vacAecSection'].forEach(id => {
-            document.getElementById(id).classList.add('hidden');
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
         });
         document.getElementById('rollNo').value = '';
-
-        document.getElementById('honSecSem1Group').classList.remove('hidden');
-        document.getElementById('honSecSem2Group').classList.remove('hidden');
-        document.getElementById('honSecSem3Group').classList.remove('hidden');
-        document.getElementById('bcomHonSecSem1Group').classList.add('hidden');
-        document.getElementById('bcomHonSecSem2Group').classList.add('hidden');
-        document.getElementById('bcomHonSecSem3Group').classList.add('hidden');
-        document.getElementById('secGenSem5Group').classList.remove('hidden');
-        document.getElementById('secGenSem6Group').classList.remove('hidden');
-        document.getElementById('bcomSecGenSem5Group').classList.add('hidden');
-        document.getElementById('bcomSecGenSem6Group').classList.add('hidden');
-
-        document.getElementById('mdcGenSem4').disabled = true;
-        document.getElementById('mdcGenSem5').disabled = true;
-        document.getElementById('mdcGenSem6').disabled = true;
-        document.getElementById('mdcGenSem4').innerHTML = '<option value="">-- Select Minor 1,2,3 first --</option>';
-        document.getElementById('mdcGenSem5').innerHTML = '<option value="">-- Select MDC Sem IV first --</option>';
-        document.getElementById('mdcGenSem6').innerHTML = '<option value="">-- Select MDC Sem V first --</option>';
-
-        document.getElementById('stream').value = '';
-        ['majorSubject', 'minor1', 'minor2', 'minor3'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
-        ['secSem1', 'secSem2', 'secGenSem3', 'secGenSem4', 'secGenSem5', 'secGenSem6',
-         'bcomSecGenSem5', 'bcomSecGenSem6', 'bcomHonSecSem1', 'bcomHonSecSem2',
-         'bcomHonSecSem3', 'secSem3'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-        });
-
-        document.getElementById('aecSem3').value = 'English';
-        document.getElementById('minor3Row').classList.add('hidden');
-        document.getElementById('minor3').required = false;
-        document.getElementById('majorSubject').required = false;
-        document.getElementById('minor1').required = false;
-        document.getElementById('minor2').required = false;
 
     } catch (error) {
         showMessage('Error: ' + error.message, 'error');
@@ -799,11 +733,9 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     }
 });
 
-// ============================================
-// UTILITY: SHOW MESSAGE
-// ============================================
 function showMessage(text, type) {
     const msg = document.getElementById('message');
+    if (!msg) return;
     msg.textContent = text;
     msg.className = type;
     msg.style.display = 'block';
@@ -823,6 +755,7 @@ async function loadStudents() {
         if (error) throw error;
 
         const tbody = document.querySelector('#studentsTable tbody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         data.forEach(student => {
@@ -836,9 +769,8 @@ async function loadStudents() {
                 <td>${student.session}</td>
                 <td>${student.mobile_no}</td>
                 <td>
-                    <button onclick="editStudent('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;background-color:#f39c12;">✏️ Edit</button>
-                    <button onclick="printStudentById('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;">🖨️ Print</button>
-                    <button onclick="deleteStudent('${student.id}')" class="btn-secondary" style="padding:5px 10px;font-size:13px;">Delete</button>
+                    <button onclick="editStudent('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;background-color:#f39c12;border:none;cursor:pointer;">✏️ Edit</button>
+                    <button onclick="printStudentById('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;border:none;cursor:pointer;">🖨️ Print</button>
                 </td>
             `;
         });
@@ -847,17 +779,99 @@ async function loadStudents() {
     }
 }
 
-async function deleteStudent(id) {
-    if (!confirm('Are you sure you want to delete this student?')) return;
+// ============================================
+// EDIT STUDENT DATA (GLOBAL)
+// ============================================
+let editingStudentId = null;
+
+window.editStudent = async function(id) {
     try {
-        const { error } = await supabaseClient.from('students').delete().eq('id', id);
+        const { data, error } = await supabaseClient
+            .from('students')
+            .select('*')
+            .eq('id', id)
+            .single();
+
         if (error) throw error;
-        loadStudents();
-        showMessage('Student deleted!', 'success');
+        if (!data) { showMessage('Student not found!', 'error'); return; }
+
+        editingStudentId = data.id;
+
+        // ট্যাব সুইচ করা (ধরে নিচ্ছি প্রথম ট্যাবটি ডাটা এন্ট্রি ফর্মের আইডি বা ক্লাস যুক্ত আছে)
+        const formTab = document.getElementById('entry-tab') || document.querySelectorAll('.tab-content')[0];
+        const masterTab = document.getElementById('master-tab') || document.querySelectorAll('.tab-content')[1];
+        
+        if (formTab && masterTab) {
+            formTab.classList.add('active');
+            masterTab.classList.remove('active');
+        }
+
+        document.getElementById('studentName').value = data.student_name || '';
+        document.getElementById('fatherName').value = data.father_name || '';
+        document.getElementById('guardianName').value = data.guardian_name || '';
+        document.getElementById('mobileNo').value = data.mobile_no || '';
+        
+        const progSelect = document.getElementById('programme');
+        progSelect.value = data.programme || '';
+        handleProgrammeChange();
+        
+        const streamSelect = document.getElementById('stream');
+        streamSelect.value = data.stream || '';
+        handleStreamChange();
+
+        document.getElementById('rollNo').value = data.roll_no || '';
+        document.getElementById('bloodGroup').value = data.blood_group || '';
+        document.getElementById('emergencyContact').value = data.emergency_contact || '';
+        document.getElementById('address').value = data.address || '';
+
+        setTimeout(() => {
+            if (data.major_subject && document.getElementById('majorSubject')) {
+                document.getElementById('majorSubject').value = data.major_subject;
+                handleMajorChange();
+            }
+            if (data.minor_1 && document.getElementById('minor1')) {
+                document.getElementById('minor1').value = data.minor_1;
+                handleMinor1Change();
+            }
+            if (data.minor_2 && document.getElementById('minor2')) {
+                document.getElementById('minor2').value = data.minor_2;
+                handleMinor2Change();
+            }
+            if (data.minor_3 && document.getElementById('minor3')) {
+                document.getElementById('minor3').value = data.minor_3;
+            }
+
+            if (data.programme === 'Honours') {
+                if(document.getElementById('mdcSem1')) document.getElementById('mdcSem1').value = data.mdc_sem1 || '';
+                if(document.getElementById('mdcSem2')) document.getElementById('mdcSem2').value = data.mdc_sem2 || '';
+                if(document.getElementById('mdcSem3')) document.getElementById('mdcSem3').value = data.mdc_sem3 || '';
+                if(document.getElementById('secSem1')) document.getElementById('secSem1').value = data.sec_sem1 || '';
+                if(document.getElementById('secSem2')) document.getElementById('secSem2').value = data.sec_sem2 || '';
+                if(document.getElementById('secSem3')) document.getElementById('secSem3').value = data.sec_sem3 || '';
+            } else {
+                if(document.getElementById('mdcGenSem4')) {
+                    document.getElementById('mdcGenSem4').value = data.mdc_gen_sem4 || '';
+                    handleMDCGenSem4Change();
+                }
+                if(document.getElementById('mdcGenSem5')) {
+                    document.getElementById('mdcGenSem5').value = data.mdc_gen_sem5 || '';
+                    handleMDCGenSem5Change();
+                }
+                if(document.getElementById('mdcGenSem6')) document.getElementById('mdcGenSem6').value = data.mdc_gen_sem6 || '';
+            }
+        }, 400);
+
+        const submitBtn = document.querySelector('#studentForm button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Update Student Data';
+
+        showMessage('Student data loaded for editing.', 'success');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
     } catch (error) {
-        showMessage('Error deleting: ' + error.message, 'error');
+        console.error('Error loading student for edit:', error);
+        showMessage('Error: ' + error.message, 'error');
     }
-}
+};
 
 // ============================================
 // PRINT SINGLE STUDENT (FROM MASTER TAB)
@@ -964,7 +978,7 @@ function generateA4PrintHTML(student) {
         .a4-page { width: 210mm; min-height: 297mm; background: white; padding: 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .outline-box { border: 2px solid #000; width: 100%; display: flex; flex-direction: column; }
         .top-bar { background-color: #000 !important; color: #fff !important; text-align: center; padding: 12px; font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; border-bottom: 2px solid #000; }
-        .student-header { text-align: center; padding: 20px; border-bottom: 2px solid #000; background: #fff; }
+        .student-header { text-align: center; padding: 20mm; border-bottom: 2px solid #000; background: #fff; }
         .student-header h2 { font-size: 22px; margin-bottom: 5px; color: #000; text-transform: uppercase; }
         .student-header p { font-size: 16px; font-weight: bold; color: #333; }
         .data-section { border-bottom: 2px solid #000; padding-bottom: 15px; }
@@ -973,11 +987,6 @@ function generateA4PrintHTML(student) {
         .data-row { display: flex; padding: 4px 20px; font-size: 15px; font-family: Arial, sans-serif; }
         .data-label { font-weight: bold; width: 200px; color: #000; }
         .data-value { flex: 1; color: #222; }
-        @media print {
-            body { padding: 0; background: white; }
-            .a4-page { padding: 10mm; box-shadow: none; }
-            .outline-box { border: 2px solid #000; }
-        }
     </style>
 </head>
 <body>
@@ -1045,24 +1054,6 @@ async function exportToExcel() {
             'Blood Group': s.blood_group,
             'Emergency Contact': s.emergency_contact,
             'Address': s.address,
-            'MDC Sem I': s.mdc_sem1,
-            'MDC Sem II': s.mdc_sem2,
-            'MDC Sem III': s.mdc_sem3,
-            'MDC Gen Sem IV': s.mdc_gen_sem4,
-            'MDC Gen Sem V': s.mdc_gen_sem5,
-            'MDC Gen Sem VI': s.mdc_gen_sem6,
-            'SEC Sem I': s.sec_sem1,
-            'SEC Sem II': s.sec_sem2,
-            'SEC Sem III': s.sec_sem3,
-            'SEC Gen Sem III': s.sec_gen_sem3,
-            'SEC Gen Sem IV': s.sec_gen_sem4,
-            'SEC Gen Sem V': s.sec_gen_sem5,
-            'SEC Gen Sem VI': s.sec_gen_sem6,
-            'VAC Sem I': s.vac_sem1,
-            'VAC Sem II': s.vac_sem2,
-            'AEC Sem I': s.aec_sem1,
-            'AEC Sem II': s.aec_sem2,
-            'AEC Sem III': s.aec_sem3,
             'Created At': s.created_at
         }));
 
@@ -1088,6 +1079,7 @@ async function loadIdCardGrid() {
         if (error) throw error;
 
         const tbody = document.querySelector('#idCardGrid tbody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         data.forEach(student => {
@@ -1106,401 +1098,20 @@ async function loadIdCardGrid() {
                 <td>${student.address || ''}</td>
             `;
         });
-
-        setupGridSelection();
     } catch (error) {
         console.error('Error loading ID card grid:', error);
     }
 }
 
-function setupGridSelection() {
-    const grid = document.getElementById('idCardGrid');
-    let selectedRows = new Set();
-
-    grid.querySelectorAll('tbody tr').forEach(row => {
-        row.addEventListener('click', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                row.classList.toggle('selected');
-                if (row.classList.contains('selected')) selectedRows.add(row);
-                else selectedRows.delete(row);
-            } else {
-                grid.querySelectorAll('tbody tr').forEach(r => r.classList.remove('selected'));
-                selectedRows.clear();
-                row.classList.add('selected');
-                selectedRows.add(row);
-            }
-        });
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-            const selected = grid.querySelectorAll('tbody tr.selected');
-            if (selected.length > 0) copySelectedRows(selected);
-        }
-    });
-}
-
-function copySelectedRows(rows) {
-    let text = '';
-    const headers = [];
-    document.querySelectorAll('#idCardGrid thead th').forEach(th => headers.push(th.textContent));
-    text += headers.join('\t') + '\n';
-
-    rows.forEach(row => {
-        const rowData = [];
-        row.querySelectorAll('td').forEach(cell => rowData.push(cell.textContent));
-        text += rowData.join('\t') + '\n';
-    });
-
-    navigator.clipboard.writeText(text).then(() => {
-        showMessage('Selected rows copied! Paste into Excel with Ctrl+V.', 'success');
-    }).catch(err => { console.error('Copy failed:', err); });
-}
-
 // ============================================
-// EXPORT ID CARD DATA TO EXCEL
-// ============================================
-async function exportIdCardToExcel() {
-    try {
-        const { data, error } = await supabaseClient.from('students').select('*').order('roll_no');
-        if (error) throw error;
-
-        const excelData = data.map(s => ({
-            'Name': s.student_name,
-            'Father Name': s.father_name,
-            'Guardian Name': s.guardian_name || '',
-            'Programme': s.programme,
-            'Stream': s.stream,
-            'Major Subject': s.major_subject || '',
-            'Roll No': s.roll_no,
-            'Session': s.session,
-            'Mobile No.': s.mobile_no,
-            'Blood Group': s.blood_group || '',
-            'Emergency Contact': s.emergency_contact || '',
-            'Address': s.address || ''
-        }));
-
-        const ws = XLSX.utils.json_to_sheet(excelData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "ID_Card_Data");
-        XLSX.writeFile(wb, "ID_Card_Data.xlsx");
-    } catch (error) {
-        console.error('Export error:', error);
-        showMessage('Export failed: ' + error.message, 'error');
-    }
-}
-
-// ============================================
-// PRINT ALL STUDENTS — A4 Portrait, 3 per Page
-// ============================================
-async function printAllStudents() {
-    try {
-        const { data, error } = await supabaseClient.from('students').select('*').order('roll_no');
-        if (error) throw error;
-
-        if (!data || data.length === 0) { showMessage('No students found to print!', 'error'); return; }
-
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) { showMessage('Please allow popups to print!', 'error'); return; }
-
-        printWindow.document.write(generatePrintHTML(data));
-        printWindow.document.close();
-        setTimeout(() => { printWindow.print(); }, 500);
-    } catch (error) {
-        console.error('Print error:', error);
-        showMessage('Print failed: ' + error.message, 'error');
-    }
-}
-
-function generatePrintHTML(students) {
-    const totalPages = Math.ceil(students.length / 3);
-    let pagesHTML = '';
-
-    for (let page = 0; page < totalPages; page++) {
-        const pageStudents = students.slice(page * 3, (page + 1) * 3);
-        let cardsHTML = pageStudents.map(generateStudentCard).join('');
-
-        pagesHTML += `
-        <div class="a4-page">
-            <div class="page-header">
-                <h2>Student Academic Information</h2>
-                <p>Session: 2026 | Mrinalini Datta Mahavidyapith</p>
-            </div>
-            ${cardsHTML}
-            <div class="page-footer">
-                Page ${page + 1} of ${totalPages} | Generated on ${new Date().toLocaleDateString()}
-            </div>
-        </div>`;
-    }
-
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Student Print - A4</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: white; }
-        .a4-page { width: 210mm; min-height: 297mm; max-height: 297mm; padding: 8mm; margin: 0 auto; background: white; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; page-break-after: always; }
-        .a4-page:last-child { page-break-after: auto; }
-        .page-header { text-align: center; border-bottom: 2px solid #1a1a2e; padding-bottom: 4px; margin-bottom: 6px; }
-        .page-header h2 { font-size: 13px; color: #1a1a2e; margin-bottom: 2px; }
-        .page-header p { font-size: 9px; color: #666; }
-        .student-card { border: 1.5px solid #333; border-radius: 5px; margin-bottom: 5px; overflow: hidden; flex: 1; display: flex; flex-direction: column; }
-        .student-card:last-child { margin-bottom: 0; }
-        .card-header { background: linear-gradient(135deg, #1a1a2e 0%, #2d3561 100%); color: white; padding: 3px 8px; display: flex; justify-content: space-between; align-items: center; }
-        .card-header .student-name { font-size: 12px; font-weight: bold; }
-        .card-header .roll-no { font-size: 10px; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 8px; }
-        .card-body { padding: 4px 8px; font-size: 8px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
-        .info-row { display: flex; gap: 6px; flex-wrap: wrap; }
-        .info-item { display: flex; gap: 2px; }
-        .info-label { font-weight: 600; color: #555; }
-        .info-value { color: #333; }
-        .section-box { border: 1px solid #ddd; border-radius: 2px; padding: 2px 4px; background: #fafafa; }
-        .section-title { font-size: 7px; font-weight: bold; color: #1a1a2e; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ddd; padding-bottom: 1px; margin-bottom: 1px; }
-        .section-content { display: flex; gap: 4px; flex-wrap: wrap; }
-        .subject-item { background: white; border: 1px solid #e0e0e0; border-radius: 2px; padding: 1px 3px; font-size: 7px; }
-        .subject-item .sem { font-weight: 600; color: #666; }
-        .subject-item .subj { color: #333; }
-        .three-col { display: flex; gap: 3px; }
-        .three-col .section-box { flex: 1; }
-        .page-footer { text-align: center; font-size: 7px; color: #999; border-top: 1px solid #ddd; padding-top: 3px; margin-top: 3px; }
-        @media print { body { background: white; } .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100vh; } }
-    </style>
-</head>
-<body>
-    ${pagesHTML}
-    <script>
-        window.onload = function() { setTimeout(function() { window.print(); }, 300); };
-    </script>
-</body>
-</html>`;
-}
-
-function generateStudentCard(student) {
-    const programme = student.programme;
-    const stream = student.stream;
-
-    let minorHTML = '';
-    if (stream === 'BCom') {
-        minorHTML = '<div class="subject-item"><span class="sem">N/A</span></div>';
-    } else if (programme === 'Honours') {
-        minorHTML = `
-            <div class="subject-item"><span class="sem">Minor 1:</span> <span class="subj">${student.minor_1 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">Minor 2:</span> <span class="subj">${student.minor_2 || 'N/A'}</span></div>`;
-    } else {
-        minorHTML = `
-            <div class="subject-item"><span class="sem">Minor 1:</span> <span class="subj">${student.minor_1 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">Minor 2:</span> <span class="subj">${student.minor_2 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">Minor 3:</span> <span class="subj">${student.minor_3 || 'N/A'}</span></div>`;
-    }
-
-    let mdcHTML = '';
-    if (programme === 'Honours') {
-        mdcHTML = `
-            <div class="subject-item"><span class="sem">I:</span> <span class="subj">${student.mdc_sem1 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">II:</span> <span class="subj">${student.mdc_sem2 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">III:</span> <span class="subj">${student.mdc_sem3 || 'N/A'}</span></div>`;
-    } else {
-        mdcHTML = `
-            <div class="subject-item"><span class="sem">IV:</span> <span class="subj">${student.mdc_gen_sem4 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">V:</span> <span class="subj">${student.mdc_gen_sem5 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">VI:</span> <span class="subj">${student.mdc_gen_sem6 || 'N/A'}</span></div>`;
-    }
-
-    let secHTML = '';
-    if (stream === 'BCom' && programme === 'Honours') {
-        secHTML = `
-            <div class="subject-item"><span class="sem">I:</span> <span class="subj">IT in Business</span></div>
-            <div class="subject-item"><span class="sem">II:</span> <span class="subj">Business Ethics</span></div>
-            <div class="subject-item"><span class="sem">III:</span> <span class="subj">E-filing</span></div>`;
-    } else if (stream === 'BCom' && programme === 'General') {
-        secHTML = `
-            <div class="subject-item"><span class="sem">III:</span> <span class="subj">Comp. Accounting</span></div>
-            <div class="subject-item"><span class="sem">IV:</span> <span class="subj">Entrepreneurship</span></div>
-            <div class="subject-item"><span class="sem">V:</span> <span class="subj">E-filing</span></div>
-            <div class="subject-item"><span class="sem">VI:</span> <span class="subj">E-Commerce</span></div>`;
-    } else if (programme === 'Honours') {
-        secHTML = `
-            <div class="subject-item"><span class="sem">I:</span> <span class="subj">${student.sec_sem1 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">II:</span> <span class="subj">${student.sec_sem2 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">III:</span> <span class="subj">${student.sec_sem3 || 'N/A'}</span></div>`;
-    } else {
-        secHTML = `
-            <div class="subject-item"><span class="sem">III:</span> <span class="subj">${student.sec_gen_sem3 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">IV:</span> <span class="subj">${student.sec_gen_sem4 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">V:</span> <span class="subj">${student.sec_gen_sem5 || 'N/A'}</span></div>
-            <div class="subject-item"><span class="sem">VI:</span> <span class="subj">${student.sec_gen_sem6 || 'N/A'}</span></div>`;
-    }
-
-    const vacAecHTML = `
-        <div class="subject-item"><span class="sem">VAC:</span> <span class="subj">ENVS, Cyber</span></div>
-        <div class="subject-item"><span class="sem">AEC:</span> <span class="subj">${student.aec_sem1 || 'Eng'}, ${student.aec_sem2 || 'Eng'}, ${student.aec_sem3 || 'N/A'}</span></div>`;
-
-    return `
-        <div class="student-card">
-            <div class="card-header">
-                <span class="student-name">${student.student_name}</span>
-                <span class="roll-no">Roll: ${student.roll_no}</span>
-            </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <div class="info-item"><span class="info-label">Programme:</span><span class="info-value">${programme}</span></div>
-                    <div class="info-item"><span class="info-label">Stream:</span><span class="info-value">${stream}</span></div>
-                    <div class="info-item"><span class="info-label">Major:</span><span class="info-value">${student.major_subject || 'N/A'}</span></div>
-                    <div class="info-item"><span class="info-label">Session:</span><span class="info-value">${student.session}</span></div>
-                </div>
-                <div class="section-box">
-                    <div class="section-title">Minor Subjects</div>
-                    <div class="section-content">${minorHTML}</div>
-                </div>
-                <div class="three-col">
-                    <div class="section-box">
-                        <div class="section-title">MDC Subjects</div>
-                        <div class="section-content">${mdcHTML}</div>
-                    </div>
-                    <div class="section-box">
-                        <div class="section-title">SEC Subjects</div>
-                        <div class="section-content">${secHTML}</div>
-                    </div>
-                    <div class="section-box">
-                        <div class="section-title">VAC & AEC</div>
-                        <div class="section-content">${vacAecHTML}</div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-}
-
-// ============================================
-// PRINT LAST SAVED STUDENT (Data Entry Tab)
-// ============================================
-function printSingleStudent() {
-    if (!window.lastSavedStudent) { showMessage('No student data to print!', 'error'); return; }
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) { showMessage('Please allow popups to print!', 'error'); return; }
-    printWindow.document.write(generateA4PrintHTML(window.lastSavedStudent));
-    printWindow.document.close();
-    setTimeout(() => { printWindow.print(); }, 500);
-}
-
-// Hide print button when user starts a new entry
-document.getElementById('studentForm').addEventListener('input', () => {
-    const printBtn = document.getElementById('printLastBtn');
-    if (printBtn && printBtn.style.display !== 'none') {
-        printBtn.style.display = 'none';
-        window.lastSavedStudent = null;
-    }
-});
-
-// ============================================
-// CHANGE EVENT LISTENERS
+// CHANGE EVENT LISTENERS & INIT
 // ============================================
 ['majorSubject', 'minor1', 'minor2', 'mdcSem1', 'mdcSem2', 'mdcSem3'].forEach(id => {
-    document.getElementById(id).addEventListener('change', updateHonoursDropdowns);
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', updateHonoursDropdowns);
 });
 
-// ============================================
-// INIT ON DOM READY
-// ============================================
 document.addEventListener('DOMContentLoaded', () => {
     loadStudents();
     loadIdCardGrid();
 });
-// ============================================
-// EDIT STUDENT DATA
-// ============================================
-let editingStudentId = null;
-
-window.editStudent = async function(id) {
-    try {
-        const { data, error } = await supabaseClient
-            .from('students')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) throw error;
-        if (!data) { showMessage('Student not found!', 'error'); return; }
-
-        // এডিট আইডি সেভ করে রাখা
-        editingStudentId = data.id;
-
-        // ট্যাব সুইচ করে ডাটা এন্ট্রি ফর্মে যাওয়া (আপনার প্রজেক্টে এন্ট্রি ট্যাবের নাম 'entry' হলে এটি কাজ করবে)
-        // যদি আপনার এন্ট্রি ট্যাবের নাম অন্য কিছু হয় (যেমন 'form' বা 'home'), তবে সেই নাম দেবেন
-        const entryTabBtn = document.querySelector('.tab-btn'); // অথবা এন্ট্রি ট্যাবের নির্দিষ্ট বাটন বা ফাংশন
-        if (typeof showTab === 'function') {
-            // যদি আপনার প্রথম ট্যাবটির নাম 'entry' বা অন্য কিছু হয়, সেটি এখানে দিন। যেমন: showTab('entry');
-            // আপাতত ট্যাব পরিবর্তনের জন্য নিচের লাইনটি ব্যবহার করতে পারেন:
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            // ধরে নিচ্ছি প্রথম ট্যাবটি ডাটা এন্ট্রি ফর্ম
-            const entryTab = document.getElementById('entry-tab') || document.querySelector('.tab-content');
-            if (entryTab) entryTab.classList.add('active');
-        }
-
-        // ফর্ম ফিল্ডগুলোতে ডাটা বসানো
-        document.getElementById('studentName').value = data.student_name || '';
-        document.getElementById('fatherName').value = data.father_name || '';
-        document.getElementById('guardianName').value = data.guardian_name || '';
-        document.getElementById('mobileNo').value = data.mobile_no || '';
-        document.getElementById('programme').value = data.programme || '';
-        
-        // প্রোগ্রাম চেঞ্জ হ্যান্ডলার কল করে ডিপেন্ডেন্ট ফিল্ডগুলো ট্রিগার করা
-        handleProgrammeChange();
-        
-        document.getElementById('stream').value = data.stream || '';
-        handleStreamChange();
-
-        document.getElementById('rollNo').value = data.roll_no || '';
-        document.getElementById('bloodGroup').value = data.blood_group || '';
-        document.getElementById('emergencyContact').value = data.emergency_contact || '';
-        document.getElementById('address').value = data.address || '';
-
-        // মেজর ও মাইনর সাবজেক্ট সেট করা
-        setTimeout(() => {
-            if (document.getElementById('majorSubject')) {
-                document.getElementById('majorSubject').value = data.major_subject || '';
-                handleMajorChange();
-            }
-            if (document.getElementById('minor1')) {
-                document.getElementById('minor1').value = data.minor_1 || '';
-                handleMinor1Change();
-            }
-            if (document.getElementById('minor2')) {
-                document.getElementById('minor2').value = data.minor_2 || '';
-                handleMinor2Change();
-            }
-            if (document.getElementById('minor3')) {
-                document.getElementById('minor3').value = data.minor_3 || '';
-            }
-            
-            // MDC ও SEC ফিল্ডগুলো পূরণ করা
-            if (data.programme === 'Honours') {
-                if(document.getElementById('mdcSem1')) document.getElementById('mdcSem1').value = data.mdc_sem1 || '';
-                if(document.getElementById('mdcSem2')) document.getElementById('mdcSem2').value = data.mdc_sem2 || '';
-                if(document.getElementById('mdcSem3')) document.getElementById('mdcSem3').value = data.mdc_sem3 || '';
-                if(document.getElementById('secSem1')) document.getElementById('secSem1').value = data.sec_sem1 || '';
-                if(document.getElementById('secSem2')) document.getElementById('secSem2').value = data.sec_sem2 || '';
-                if(document.getElementById('secSem3')) document.getElementById('secSem3').value = data.sec_sem3 || '';
-            } else {
-                if(document.getElementById('mdcGenSem4')) document.getElementById('mdcGenSem4').value = data.mdc_gen_sem4 || '';
-                if(document.getElementById('mdcGenSem5')) document.getElementById('mdcGenSem5').value = data.mdc_gen_sem5 || '';
-                if(document.getElementById('mdcGenSem6')) document.getElementById('mdcGenSem6').value = data.mdc_gen_sem6 || '';
-            }
-        }, 300);
-
-        // সাবমিট বাটনের টেক্সট পরিবর্তন করে "Update" করা
-        const submitBtn = document.querySelector('#studentForm button[type="submit"]');
-        if (submitBtn) submitBtn.textContent = 'Update Student Data';
-
-        showMessage('Student data loaded for editing. Make changes and submit.', 'success');
-        
-        // পেcroll করে ফর্মের দিকে নিয়ে যাওয়া
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-        console.error('Error loading student for edit:', error);
-        showMessage('Error: ' + error.message, 'error');
-    }
-}
