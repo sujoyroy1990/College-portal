@@ -1103,6 +1103,9 @@ function generateA4PrintHTML(student) {
 // ============================================
 // EXPORT MASTER DATA TO EXCEL (UPDATED)
 // ============================================
+// ============================================
+// EXPORT MASTER DATA TO EXCEL (WITH FIELD HISTORY)
+// ============================================
 async function exportToExcel() {
     try {
         const { data, error } = await supabaseClient.from('students').select('*');
@@ -1127,8 +1130,9 @@ async function exportToExcel() {
             'Address': s.address,
             'Created At': s.created_at ? new Date(s.created_at).toLocaleString() : '',
             'Edit Status': s.is_updated ? 'Edited' : 'Unedited',
-            // যদি এডিট করা হয়ে থাকে শুধু তবেই টাইম দেখাবে, নতুবা ফাঁকা থাকবে
-            'Updated At': (s.is_updated && s.updated_at) ? new Date(s.updated_at).toLocaleString() : 'Not Edited'
+            'Updated At': (s.is_updated && s.updated_at) ? new Date(s.updated_at).toLocaleString() : 'Not Edited',
+            // সুনির্দিষ্টভাবে কী পরিবর্তন হলো তা এখানে দেখাবে
+            'Change History': s.change_history || 'No changes'
         }));
 
         const ws = XLSX.utils.json_to_sheet(excelData);
@@ -1139,7 +1143,6 @@ async function exportToExcel() {
         console.error('Export error:', error);
     }
 }
-
 // ============================================
 // ID CARD GRID (ID Card Tab)
 // ============================================
