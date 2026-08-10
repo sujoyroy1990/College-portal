@@ -1076,6 +1076,9 @@ function generateA4PrintHTML(student) {
 // ============================================
 // EXPORT MASTER DATA TO EXCEL
 // ============================================
+// ============================================
+// EXPORT MASTER DATA TO EXCEL (UPDATED)
+// ============================================
 async function exportToExcel() {
     try {
         const { data, error } = await supabaseClient.from('students').select('*');
@@ -1098,9 +1101,10 @@ async function exportToExcel() {
             'Blood Group': s.blood_group,
             'Emergency Contact': s.emergency_contact,
             'Address': s.address,
-            'Created At': s.created_at,
-            'Is Updated': s.is_updated ? 'Yes' : 'No', // এডিট করা হয়েছে কি না তার স্ট্যাটাস
-            'Updated At': s.updated_at || 'Not Edited'    // এডিটের সুনির্দিষ্ট তারিখ ও সময় (হিস্ট্রি)
+            'Created At': s.created_at ? new Date(s.created_at).toLocaleString() : '',
+            'Edit Status': s.is_updated ? 'Edited' : 'Unedited',
+            // যদি এডিট করা হয়ে থাকে শুধু তবেই টাইম দেখাবে, নতুবা ফাঁকা থাকবে
+            'Updated At': (s.is_updated && s.updated_at) ? new Date(s.updated_at).toLocaleString() : 'Not Edited'
         }));
 
         const ws = XLSX.utils.json_to_sheet(excelData);
