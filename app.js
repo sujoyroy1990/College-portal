@@ -694,7 +694,25 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
 
     try {
         if (editingStudentId) {
-            // এডিট করার সময় আপডেট ফ্ল্যাগ এবং টাইমস্ট্যাম্প যুক্ত করা হলো
+            // ১. ডাটাবেজ থেকে এডিট করার ঠিক আগের পুরনো ডেটা ফেচ করে আনা
+            const { data: oldData } = await supabaseClient
+                .from('students')
+                .select('*')
+                .eq('id', editingStudentId)
+                .single();
+
+            // ২. কী কী পরিবর্তন হয়েছে তা ট্র্যাক করার জন্য একটি অ্যারে
+            let changes = [];
+            if (oldData) {
+                if (oldData.student_name !== studentData.student_name) changes.push(`Name: ${oldData.student_name} -> ${studentData.student_name}`);
+                if (oldData.mobile_no !== studentData.mobile_no) changes.push(`Mobile: ${oldData.mobile_no} -> ${studentData.mobile_no}`);
+                if (oldData.major_subject !== studentData.major_subject) changes.push(`Major: ${oldData.major_subject || 'None'} -> ${studentData.major_subject || 'None'}`);
+                if (oldData.programme !== studentData.programme) changes.push(`Programme: ${oldData.programme} -> ${studentData.programme}`);
+                if (oldData.address !== studentData.address) changes.push(`Address updated`);
+            }
+
+            // যদি কোনো ফিল্ড পরিবর্তিত হয়ে থাকে, তা হিস্ট्रीতে যোগ হবে, না হলে ডিফল্ট মেসেজ থাকবে
+            studentData.change_history = changes.length > 0 ? changes.join(', ') : 'Updated (Minor changes)';
             studentData.is_updated = true;
             studentData.updated_at = new Date().toISOString();
 
@@ -710,6 +728,10 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
             const submitBtn = document.querySelector('#studentForm button[type="submit"]');
             if (submitBtn) submitBtn.textContent = 'Save Student Data';
         } else {
+            // নতুন রেজিস্ট্রেশনের ক্ষেত্রে
+            studentData.change_history = 'New Registration';
+            studentData.is_updated = false;
+
             const { error } = await supabaseClient
                 .from('students')
                 .insert([studentData]);
@@ -717,6 +739,8 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
             if (error) throw error;
             showMessage('Student data saved successfully! Roll No: ' + studentData.roll_no, 'success');
         }
+
+        // বাকি অংশ অপরিবর্তিত থাকবে...
 
         window.lastSavedStudent = studentData;
         const printBtn = document.getElementById('printLastBtn');
