@@ -563,6 +563,9 @@ function resetDependentFields() {
 }
 
 async function generateRollNo() {
+    // যদি আমরা এডিট মোডে থাকি, তবে নতুন রোল জেনারেট করা থেকে বিরত থাকবে
+    if (isEditing) return; 
+
     const programme = document.getElementById('programme').value;
     const stream = document.getElementById('stream').value;
 
@@ -594,7 +597,6 @@ async function generateRollNo() {
         document.getElementById('rollNo').value = prefix + '0001';
     }
 }
-
 // ============================================
 // SAVE / UPDATE STUDENT DATA
 // ============================================
@@ -824,11 +826,14 @@ let editingStudentId = null;
 
 window.editStudent = async function(id) {
     try {
+        isEditing = true; // এডিট শুরু হওয়ার সাথে সাথে ফ্ল্যাগ ট্রু হবে, যাতে রোল না বদলায়
+
         const { data, error } = await supabaseClient
             .from('students')
             .select('*')
             .eq('id', id)
             .single();
+        // ... (বাকি কোড যেমন আছে থাকবে)
 
         if (error) throw error;
         if (!data) { showMessage('Student not found!', 'error'); return; }
@@ -1195,6 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function cancelEdit() {
     editingStudentId = null;
+    isEditing = false; // এডিট বাতিল হলে আবার ফলস হবে
     document.getElementById('studentForm').reset();
     const submitBtn = document.querySelector('#studentForm button[type="submit"]');
     if (submitBtn) submitBtn.textContent = 'Save Student Data';
