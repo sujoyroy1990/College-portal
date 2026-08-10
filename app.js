@@ -749,6 +749,9 @@ function showMessage(text, type) {
 // ============================================
 // LOAD & DISPLAY STUDENTS (MASTER DATA TAB)
 // ============================================
+// ============================================
+// LOAD & DISPLAY STUDENTS (MASTER DATA TAB)
+// ============================================
 async function loadStudents() {
     try {
         const { data, error } = await supabaseClient
@@ -765,7 +768,8 @@ async function loadStudents() {
         data.forEach(student => {
             const row = tbody.insertRow();
             
-            // যদি ডাটাটি এডিট বা আপডেট করা হয়ে থাকে, তবে হলুদ রঙ যোগ হবে
+            // অত্যন্ত গুরুত্বপূর্ণ: ডাটা যখনই লোড হবে, যদি সেটি আগে এডিট করা হয়ে থাকে 
+            // তবে চিরতরে বা নিউট্রাল অবস্থাতেও হলুদ রঙ (highlight-updated) ধরে রাখবে।
             if (student.is_updated) {
                 row.classList.add('highlight-updated');
             }
@@ -1069,6 +1073,9 @@ function generateA4PrintHTML(student) {
 // ============================================
 // EXPORT MASTER DATA TO EXCEL
 // ============================================
+// ============================================
+// EXPORT MASTER DATA TO EXCEL
+// ============================================
 async function exportToExcel() {
     try {
         const { data, error } = await supabaseClient.from('students').select('*');
@@ -1092,7 +1099,8 @@ async function exportToExcel() {
             'Emergency Contact': s.emergency_contact,
             'Address': s.address,
             'Created At': s.created_at,
-            'Updated At': s.updated_at // আপডেট হিস্ট্রি এক্সেল এক্সপোর্টে যোগ করা হলো
+            'Is Updated': s.is_updated ? 'Yes' : 'No', // এডিট করা হয়েছে কি না তার স্ট্যাটাস
+            'Updated At': s.updated_at || 'Not Edited'    // এডিটের সুনির্দিষ্ট তারিখ ও সময় (হিস্ট্রি)
         }));
 
         const ws = XLSX.utils.json_to_sheet(excelData);
