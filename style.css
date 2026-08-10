@@ -293,6 +293,25 @@ tr:hover {
     border: 1px solid #f5c6cb;
 }
 
+/* ============================================
+   HIGHLIGHT STYLES (Search & Edited Rows)
+   ============================================ */
+
+/* সার্চ করার সময় রো হাইলাইট করার স্টাইল */
+.highlight-row {
+    background-color: #fff9c4 !important; 
+}
+
+/* এডিট বা আপডেট করার পর রো হলুদ রঙে মার্ক করার স্টাইল */
+tr.highlight-updated {
+    background-color: #fff3cd !important; 
+    transition: background-color 1s ease;
+}
+
+tr.highlight-updated:hover {
+    background-color: #ffeeba !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-row {
@@ -308,20 +327,4 @@ tr:hover {
     .data-grid th, .data-grid td {
         padding: 6px;
     }
-    /* সার্চ হাইলাইট স্টাইল */
-/* সার্চ হাইলাইট স্টাইল */
-.highlight-row {
-    background-color: #fff9c4 !important; /* হালকা হলুদ ব্যাকগ্রাউন্ড */
 }
-}
-<style>
-/* Yellow highlight for newly edited/saved rows */
-tr.highlight-updated {
-    background-color: #fff3cd !important; /* Soft warning/yellow tone */
-    transition: background-color 1s ease;
-}
-
-tr.highlight-updated:hover {
-    background-color: #ffeeba !important;
-}
-</style>

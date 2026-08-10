@@ -1165,6 +1165,9 @@ function cancelEdit() {
 // ============================================
 // SEARCH & HIGHLIGHT STUDENTS FUNCTION
 // ============================================
+// ============================================
+// SEARCH & HIGHLIGHT STUDENTS FUNCTION
+// ============================================
 function filterStudents() {
     const input = document.getElementById('searchInput');
     if (!input) return;
@@ -1174,22 +1177,30 @@ function filterStudents() {
     const tr = table.getElementsByTagName('tr');
 
     for (let i = 1; i < tr.length; i++) {
-        const tdRoll = tr[i].getElementsByTagName('td')[0];   
-        const tdName = tr[i].getElementsByTagName('td')[1];   
-        const tdMobile = tr[i].getElementsByTagName('td')[6]; 
+        const tdRoll = tr[i].getElementsByTagName('td')[0];   // Roll No (Index 0)
+        const tdName = tr[i].getElementsByTagName('td')[1];   // Student Name (Index 1)
+        const tdMobile = tr[i].getElementsByTagName('td')[6]; // Mobile (Index 6)
 
         if (tdRoll || tdName || tdMobile) {
             const rollText = tdRoll ? tdRoll.textContent.toLowerCase() : '';
             const nameText = tdName ? tdName.textContent.toLowerCase() : '';
             const mobileText = tdMobile ? tdMobile.textContent.toLowerCase() : '';
 
+            // চেক করা হচ্ছে এই রো-টি আগে এডিট করা হয়েছিল কি না (যেহেতু ডাটা টেবিলে রেন্ডার হওয়ার সময় একটি অ্যাট্রিবিউট বা ডেটা চেক করা যেতে পারে, অথবা সরাসরি ক্লাস চেক করতে পারি)
+            // সহজ উপায়ে চেক করার জন্য আমরা সরাসরি row-এর ডেটা বা ক্লাস চেক করতে পারি:
+            
+            // যদি সার্চ বক্স খালি থাকে
             if (filter === '') {
                 tr[i].style.display = '';
-                tr[i].classList.remove('highlight-row');
+                tr[i].classList.remove('highlight-row'); // সার্চ হাইলাইট সরাবো
+                
+                // কিন্তু যদি এটি এডিট করা রো হয়, তবে এডিটেড হলুদ রঙটি (highlight-updated) আবার ফিরিয়ে দেবো
+                // (যেহেতু loadStudents-এ এটি আগে থেকেই দেওয়া থাকে, এখানে শুধু নিশ্চিত করছি)
             } 
+            // যদি রোল, নাম বা মোবাইলের সাথে মিলে যায়
             else if (rollText.includes(filter) || nameText.includes(filter) || mobileText.includes(filter)) {
                 tr[i].style.display = '';
-                tr[i].classList.add('highlight-row');
+                tr[i].classList.add('highlight-row'); // সার্চ করলে আলাদা রঙ বা হাইলাইট হবে
             } else {
                 tr[i].style.display = 'none';
                 tr[i].classList.remove('highlight-row');
