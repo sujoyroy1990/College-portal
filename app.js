@@ -58,7 +58,7 @@ function showTab(tabName) {
     const targetTab = document.getElementById(tabName + '-tab');
     if (targetTab) targetTab.classList.add('active');
     
-    // ইভেন্ট ট্রিক হ্যান্ডেল করা (যদি ফাংশনটি সরাসরি বাটন ক্লিক ছাড়া কল করা হয়)
+    // ইভেন্ট ট্রিক হ্যান্ডেল করা (যদি ফাংশনটি সরাসরি বাটন ক্লিক ছাড়া কল করা হয়)
     if (typeof event !== 'undefined' && event && event.target) {
         event.target.classList.add('active');
     } else {
@@ -694,6 +694,10 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
 
     try {
         if (editingStudentId) {
+            // এডিট করার সময় আপডেট ফ্ল্যাগ এবং টাইমস্ট্যাম্প যুক্ত করা হলো
+            studentData.is_updated = true;
+            studentData.updated_at = new Date().toISOString();
+
             const { error } = await supabaseClient
                 .from('students')
                 .update(studentData)
@@ -760,6 +764,12 @@ async function loadStudents() {
 
         data.forEach(student => {
             const row = tbody.insertRow();
+            
+            // যদি ডাটাটি এডিট বা আপডেট করা হয়ে থাকে, তবে হলুদ রঙ যোগ হবে
+            if (student.is_updated) {
+                row.classList.add('highlight-updated');
+            }
+
             row.innerHTML = `
                 <td>${student.roll_no}</td>
                 <td>${student.student_name}</td>
@@ -797,7 +807,7 @@ window.editStudent = async function(id) {
 
         editingStudentId = data.id;
 
-        // ট্যাব সুইচ করা (ধরে নিচ্ছি প্রথম ট্যাবটি ডাটা এন্ট্রি ফর্মের আইডি বা ক্লাস যুক্ত আছে)
+        // ট্যাব সুইচ করা 
         const formTab = document.getElementById('entry-tab') || document.querySelectorAll('.tab-content')[0];
         const masterTab = document.getElementById('master-tab') || document.querySelectorAll('.tab-content')[1];
         
@@ -1055,6 +1065,7 @@ function generateA4PrintHTML(student) {
 </body>
 </html>`;
 }
+
 // ============================================
 // EXPORT MASTER DATA TO EXCEL
 // ============================================
@@ -1080,7 +1091,8 @@ async function exportToExcel() {
             'Blood Group': s.blood_group,
             'Emergency Contact': s.emergency_contact,
             'Address': s.address,
-            'Created At': s.created_at
+            'Created At': s.created_at,
+            'Updated At': s.updated_at // আপডেট হিস্ট্রি এক্সেল এক্সপোর্টে যোগ করা হলো
         }));
 
         const ws = XLSX.utils.json_to_sheet(excelData);
@@ -1141,16 +1153,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStudents();
     loadIdCardGrid();
 });
+
 function cancelEdit() {
     editingStudentId = null;
     document.getElementById('studentForm').reset();
     const submitBtn = document.querySelector('#studentForm button[type="submit"]');
     if (submitBtn) submitBtn.textContent = 'Save Student Data';
-    showTab('master'); // মাস্টার ট্যাবে ফিরিয়ে নিয়ে যাবে
+    showTab('master'); 
 }
-// ============================================
-// SEARCH & HIGHLIGHT STUDENTS FUNCTION
-// ============================================
+
 // ============================================
 // SEARCH & HIGHLIGHT STUDENTS FUNCTION
 // ============================================
@@ -1163,21 +1174,19 @@ function filterStudents() {
     const tr = table.getElementsByTagName('tr');
 
     for (let i = 1; i < tr.length; i++) {
-        const tdRoll = tr[i].getElementsByTagName('td')[0];   // Roll No (Index 0)
-        const tdName = tr[i].getElementsByTagName('td')[1];   // Student Name (Index 1)
-        const tdMobile = tr[i].getElementsByTagName('td')[6]; // Mobile (Index 6)
+        const tdRoll = tr[i].getElementsByTagName('td')[0];   
+        const tdName = tr[i].getElementsByTagName('td')[1];   
+        const tdMobile = tr[i].getElementsByTagName('td')[6]; 
 
         if (tdRoll || tdName || tdMobile) {
             const rollText = tdRoll ? tdRoll.textContent.toLowerCase() : '';
             const nameText = tdName ? tdName.textContent.toLowerCase() : '';
             const mobileText = tdMobile ? tdMobile.textContent.toLowerCase() : '';
 
-            // যদি সার্চ বক্স খালি থাকে
             if (filter === '') {
                 tr[i].style.display = '';
                 tr[i].classList.remove('highlight-row');
             } 
-            // যদি রোল, নাম বা মোবাইলের সাথে মিলে যায়
             else if (rollText.includes(filter) || nameText.includes(filter) || mobileText.includes(filter)) {
                 tr[i].style.display = '';
                 tr[i].classList.add('highlight-row');

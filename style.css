@@ -314,3 +314,14 @@ tr:hover {
     background-color: #fff9c4 !important; /* হালকা হলুদ ব্যাকগ্রাউন্ড */
 }
 }
+<style>
+/* Yellow highlight for newly edited/saved rows */
+tr.highlight-updated {
+    background-color: #fff3cd !important; /* Soft warning/yellow tone */
+    transition: background-color 1s ease;
+}
+
+tr.highlight-updated:hover {
+    background-color: #ffeeba !important;
+}
+</style>
