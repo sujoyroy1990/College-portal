@@ -6,6 +6,10 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// গ্লোবাল এডিট ফ্ল্যাগ (রোল নম্বর পরিবর্তন রোধ করার জন্য)
+let editingStudentId = null;
+let isEditing = false;
+
 // ============================================
 // DATA DICTIONARIES
 // ============================================
@@ -58,11 +62,9 @@ function showTab(tabName) {
     const targetTab = document.getElementById(tabName + '-tab');
     if (targetTab) targetTab.classList.add('active');
     
-    // ইভেন্ট ট্রিক হ্যান্ডেল করা (যদি ফাংশনটি সরাসরি বাটন ক্লিক ছাড়া কল করা হয়)
     if (typeof event !== 'undefined' && event && event.target) {
         event.target.classList.add('active');
     } else {
-        // এডিট থেকে কল হলে প্রথম বাটন বা এন্ট্রি বাটন সিলেক্ট করা
         const targetBtn = document.querySelector(`button[onclick*="${tabName}"]`);
         if (targetBtn) targetBtn.classList.add('active');
     }
@@ -563,8 +565,7 @@ function resetDependentFields() {
 }
 
 async function generateRollNo() {
-    // যদি আমরা এডিট মোডে থাকি, তবে নতুন রোল জেনারেট করা থেকে বিরত থাকবে
-    if (isEditing) return; 
+    if (isEditing) return; // এডিট মোডে থাকলে রোল নম্বর জেনারেশন ব্লক থাকবে
 
     const programme = document.getElementById('programme').value;
     const stream = document.getElementById('stream').value;
@@ -597,6 +598,7 @@ async function generateRollNo() {
         document.getElementById('rollNo').value = prefix + '0001';
     }
 }
+
 // ============================================
 // SAVE / UPDATE STUDENT DATA
 // ============================================
@@ -696,14 +698,12 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
 
     try {
         if (editingStudentId) {
-            // ১. ডাটাবেজ থেকে এডিট করার ঠিক আগের পুরনো ডেটা ফেচ করে আনা
             const { data: oldData } = await supabaseClient
                 .from('students')
                 .select('*')
                 .eq('id', editingStudentId)
                 .single();
 
-            // ২. কী কী পরিবর্তন হয়েছে তা ট্র্যাক করার জন্য একটি অ্যারে
             let changes = [];
             if (oldData) {
                 if (oldData.student_name !== studentData.student_name) changes.push(`Name: ${oldData.student_name} -> ${studentData.student_name}`);
@@ -713,7 +713,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
                 if (oldData.address !== studentData.address) changes.push(`Address updated`);
             }
 
-            // যদি কোনো ফিল্ড পরিবর্তিত হয়ে থাকে, তা হিস্ট्रीতে যোগ হবে, না হলে ডিফল্ট মেসেজ থাকবে
             studentData.change_history = changes.length > 0 ? changes.join(', ') : 'Updated (Minor changes)';
             studentData.is_updated = true;
             studentData.updated_at = new Date().toISOString();
@@ -727,10 +726,10 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
             showMessage('Student data updated successfully!', 'success');
             
             editingStudentId = null;
+            isEditing = false;
             const submitBtn = document.querySelector('#studentForm button[type="submit"]');
             if (submitBtn) submitBtn.textContent = 'Save Student Data';
         } else {
-            // নতুন রেজিস্ট্রেশনের ক্ষেত্রে
             studentData.change_history = 'New Registration';
             studentData.is_updated = false;
 
@@ -741,8 +740,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
             if (error) throw error;
             showMessage('Student data saved successfully! Roll No: ' + studentData.roll_no, 'success');
         }
-
-        // বাকি অংশ অপরিবর্তিত থাকবে...
 
         window.lastSavedStudent = studentData;
         const printBtn = document.getElementById('printLastBtn');
@@ -775,9 +772,6 @@ function showMessage(text, type) {
 // ============================================
 // LOAD & DISPLAY STUDENTS (MASTER DATA TAB)
 // ============================================
-// ============================================
-// LOAD & DISPLAY STUDENTS (MASTER DATA TAB)
-// ============================================
 async function loadStudents() {
     try {
         const { data, error } = await supabaseClient
@@ -794,8 +788,6 @@ async function loadStudents() {
         data.forEach(student => {
             const row = tbody.insertRow();
             
-            // অত্যন্ত গুরুত্বপূর্ণ: ডাটা যখনই লোড হবে, যদি সেটি আগে এডিট করা হয়ে থাকে 
-            // তবে চিরতরে বা নিউট্রাল অবস্থাতেও হলুদ রঙ (highlight-updated) ধরে রাখবে।
             if (student.is_updated) {
                 row.classList.add('highlight-updated');
             }
@@ -822,25 +814,21 @@ async function loadStudents() {
 // ============================================
 // EDIT STUDENT DATA (GLOBAL)
 // ============================================
-let editingStudentId = null;
-
 window.editStudent = async function(id) {
     try {
-        isEditing = true; // এডিট শুরু হওয়ার সাথে সাথে ফ্ল্যাগ ট্রু হবে, যাতে রোল না বদলায়
+        isEditing = true; // এডিট শুরু হওয়ার সাথে সাথে রোল জেনারেটর লক হবে
 
         const { data, error } = await supabaseClient
             .from('students')
             .select('*')
             .eq('id', id)
             .single();
-        // ... (বাকি কোড যেমন আছে থাকবে)
 
         if (error) throw error;
         if (!data) { showMessage('Student not found!', 'error'); return; }
 
         editingStudentId = data.id;
 
-        // ট্যাব সুইচ করা 
         const formTab = document.getElementById('entry-tab') || document.querySelectorAll('.tab-content')[0];
         const masterTab = document.getElementById('master-tab') || document.querySelectorAll('.tab-content')[1];
         
@@ -1016,30 +1004,10 @@ function generateA4PrintHTML(student) {
     <meta charset="UTF-8">
     <title>Print - ${student.student_name}</title>
     <style>
-        @page {
-            size: A4 portrait;
-            margin: 0;
-        }
+        @page { size: A4 portrait; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Courier New', Courier, monospace; 
-            background: #e0e0e0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 10mm;
-        }
-        .a4-page { 
-            width: 210mm; 
-            min-height: 297mm; 
-            max-height: 297mm;
-            background: white; 
-            padding: 10mm; 
-            box-sizing: border-box;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            overflow: hidden;
-        }
+        body { font-family: 'Courier New', Courier, monospace; background: #e0e0e0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 10mm; }
+        .a4-page { width: 210mm; min-height: 297mm; max-height: 297mm; background: white; padding: 10mm; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2); overflow: hidden; }
         .outline-box { border: 2px solid #000; width: 100%; height: 100%; display: flex; flex-direction: column; }
         .top-bar { background-color: #000 !important; color: #fff !important; text-align: center; padding: 8px; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; border-bottom: 2px solid #000; }
         .student-header { text-align: center; padding: 10px; border-bottom: 2px solid #000; background: #fff; }
@@ -1051,7 +1019,6 @@ function generateA4PrintHTML(student) {
         .data-row { display: flex; padding: 3px 15px; font-size: 13px; font-family: Arial, sans-serif; }
         .data-label { font-weight: bold; width: 180px; color: #000; }
         .data-value { flex: 1; color: #222; }
-
         @media print {
             body { background: white; padding: 0; display: block; }
             .a4-page { width: 210mm; height: 297mm; max-height: 297mm; padding: 8mm; box-shadow: none; margin: 0; }
@@ -1102,15 +1069,6 @@ function generateA4PrintHTML(student) {
 // ============================================
 // EXPORT MASTER DATA TO EXCEL
 // ============================================
-// ============================================
-// EXPORT MASTER DATA TO EXCEL
-// ============================================
-// ============================================
-// EXPORT MASTER DATA TO EXCEL (UPDATED)
-// ============================================
-// ============================================
-// EXPORT MASTER DATA TO EXCEL (WITH FIELD HISTORY)
-// ============================================
 async function exportToExcel() {
     try {
         const { data, error } = await supabaseClient.from('students').select('*');
@@ -1136,7 +1094,6 @@ async function exportToExcel() {
             'Created At': s.created_at ? new Date(s.created_at).toLocaleString() : '',
             'Edit Status': s.is_updated ? 'Edited' : 'Unedited',
             'Updated At': (s.is_updated && s.updated_at) ? new Date(s.updated_at).toLocaleString() : 'Not Edited',
-            // সুনির্দিষ্টভাবে কী পরিবর্তন হলো তা এখানে দেখাবে
             'Change History': s.change_history || 'No changes'
         }));
 
@@ -1148,6 +1105,7 @@ async function exportToExcel() {
         console.error('Export error:', error);
     }
 }
+
 // ============================================
 // ID CARD GRID (ID Card Tab)
 // ============================================
@@ -1200,16 +1158,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function cancelEdit() {
     editingStudentId = null;
-    isEditing = false; // এডিট বাতিল হলে আবার ফলস হবে
+    isEditing = false; // এডিট বাতিল হলে ফ্ল্যাগ রিসেট হবে
     document.getElementById('studentForm').reset();
     const submitBtn = document.querySelector('#studentForm button[type="submit"]');
     if (submitBtn) submitBtn.textContent = 'Save Student Data';
     showTab('master'); 
 }
 
-// ============================================
-// SEARCH & HIGHLIGHT STUDENTS FUNCTION
-// ============================================
 // ============================================
 // SEARCH & HIGHLIGHT STUDENTS FUNCTION
 // ============================================
@@ -1222,30 +1177,22 @@ function filterStudents() {
     const tr = table.getElementsByTagName('tr');
 
     for (let i = 1; i < tr.length; i++) {
-        const tdRoll = tr[i].getElementsByTagName('td')[0];   // Roll No (Index 0)
-        const tdName = tr[i].getElementsByTagName('td')[1];   // Student Name (Index 1)
-        const tdMobile = tr[i].getElementsByTagName('td')[6]; // Mobile (Index 6)
+        const tdRoll = tr[i].getElementsByTagName('td')[0];   
+        const tdName = tr[i].getElementsByTagName('td')[1];   
+        const tdMobile = tr[i].getElementsByTagName('td')[6]; 
 
         if (tdRoll || tdName || tdMobile) {
             const rollText = tdRoll ? tdRoll.textContent.toLowerCase() : '';
             const nameText = tdName ? tdName.textContent.toLowerCase() : '';
             const mobileText = tdMobile ? tdMobile.textContent.toLowerCase() : '';
 
-            // চেক করা হচ্ছে এই রো-টি আগে এডিট করা হয়েছিল কি না (যেহেতু ডাটা টেবিলে রেন্ডার হওয়ার সময় একটি অ্যাট্রিবিউট বা ডেটা চেক করা যেতে পারে, অথবা সরাসরি ক্লাস চেক করতে পারি)
-            // সহজ উপায়ে চেক করার জন্য আমরা সরাসরি row-এর ডেটা বা ক্লাস চেক করতে পারি:
-            
-            // যদি সার্চ বক্স খালি থাকে
             if (filter === '') {
                 tr[i].style.display = '';
-                tr[i].classList.remove('highlight-row'); // সার্চ হাইলাইট সরাবো
-                
-                // কিন্তু যদি এটি এডিট করা রো হয়, তবে এডিটেড হলুদ রঙটি (highlight-updated) আবার ফিরিয়ে দেবো
-                // (যেহেতু loadStudents-এ এটি আগে থেকেই দেওয়া থাকে, এখানে শুধু নিশ্চিত করছি)
+                tr[i].classList.remove('highlight-row');
             } 
-            // যদি রোল, নাম বা মোবাইলের সাথে মিলে যায়
             else if (rollText.includes(filter) || nameText.includes(filter) || mobileText.includes(filter)) {
                 tr[i].style.display = '';
-                tr[i].classList.add('highlight-row'); // সার্চ করলে আলাদা রঙ বা হাইলাইট হবে
+                tr[i].classList.add('highlight-row');
             } else {
                 tr[i].style.display = 'none';
                 tr[i].classList.remove('highlight-row');
