@@ -769,7 +769,7 @@ function showMessage(text, type) {
     setTimeout(() => { msg.style.display = 'none'; }, 5000);
 }
 
-/// ============================================
+// ============================================
 // LOAD & DISPLAY STUDENTS (MASTER DATA TAB)
 // ============================================
 async function loadStudents() {
@@ -822,7 +822,7 @@ async function loadStudents() {
 // ============================================
 window.editStudent = async function(id) {
     try {
-        isEditing = true; // এডিট শুরু হওয়ার সাথে সাথে রোল জেনারেটর লক হবে
+        isEditing = true; // এডিট শুরু হওয়ার সাথে সাথে রোল জেনারেটর লক হবে
 
         const { data, error } = await supabaseClient
             .from('students')
@@ -1097,7 +1097,7 @@ async function exportToExcel() {
             'Blood Group': s.blood_group,
             'Emergency Contact': s.emergency_contact,
             'Address': s.address,
-            'Verified Status': s.is_verified ? 'Verified' : 'Not Verified', // নতুন যুক্ত করা হলো
+            'Verified Status': s.is_verified ? 'Verified' : 'Not Verified',
             'Created At': s.created_at ? new Date(s.created_at).toLocaleString() : '',
             'Edit Status': s.is_updated ? 'Edited' : 'Unedited',
             'Updated At': (s.is_updated && s.updated_at) ? new Date(s.updated_at).toLocaleString() : 'Not Edited',
@@ -1206,7 +1206,8 @@ function filterStudents() {
             }
         }
     }
-}    
+}
+
 // ============================================
 // TOGGLE STUDENT VERIFICATION STATUS
 // ============================================
@@ -1225,5 +1226,4 @@ async function toggleVerifyStudent(id, newStatus) {
         console.error('Error updating verification status:', error);
         showMessage('Error: ' + error.message, 'error');
     }
-}
 }
