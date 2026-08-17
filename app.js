@@ -769,7 +769,7 @@ function showMessage(text, type) {
     setTimeout(() => { msg.style.display = 'none'; }, 5000);
 }
 
-// ============================================
+/// ============================================
 // LOAD & DISPLAY STUDENTS (MASTER DATA TAB)
 // ============================================
 async function loadStudents() {
@@ -792,6 +792,11 @@ async function loadStudents() {
                 row.classList.add('highlight-updated');
             }
 
+            // ভেরিফাইড স্ট্যাটাসের ওপর ভিত্তি করে বাটনের স্টাইল ও টেক্সট নির্ধারণ
+            const isVerified = student.is_verified === true;
+            const btnBg = isVerified ? '#2ecc71' : '#e74c3c'; // সবুজ বা লাল
+            const btnText = isVerified ? '✅ Verified' : '⏳ Verify';
+
             row.innerHTML = `
                 <td>${student.roll_no}</td>
                 <td>${student.student_name}</td>
@@ -801,8 +806,9 @@ async function loadStudents() {
                 <td>${student.session}</td>
                 <td>${student.mobile_no}</td>
                 <td>
-                    <button onclick="editStudent('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;background-color:#f39c12;border:none;cursor:pointer;">✏️ Edit</button>
-                    <button onclick="printStudentById('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;border:none;cursor:pointer;">🖨️ Print</button>
+                    <button onclick="toggleVerifyStudent('${student.id}', ${!isVerified})" class="btn-verify" style="padding:5px 10px;font-size:13px;margin-right:5px;background-color:${btnBg};color:white;border:none;border-radius:4px;cursor:pointer;">${btnText}</button>
+                    <button onclick="editStudent('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;background-color:#f39c12;border:none;border-radius:4px;cursor:pointer;">✏️ Edit</button>
+                    <button onclick="printStudentById('${student.id}')" class="btn-primary" style="padding:5px 10px;font-size:13px;margin-right:5px;border:none;border-radius:4px;cursor:pointer;">🖨️ Print</button>
                 </td>
             `;
         });
@@ -1091,6 +1097,7 @@ async function exportToExcel() {
             'Blood Group': s.blood_group,
             'Emergency Contact': s.emergency_contact,
             'Address': s.address,
+            'Verified Status': s.is_verified ? 'Verified' : 'Not Verified', // নতুন যুক্ত করা হলো
             'Created At': s.created_at ? new Date(s.created_at).toLocaleString() : '',
             'Edit Status': s.is_updated ? 'Edited' : 'Unedited',
             'Updated At': (s.is_updated && s.updated_at) ? new Date(s.updated_at).toLocaleString() : 'Not Edited',
@@ -1199,4 +1206,24 @@ function filterStudents() {
             }
         }
     }
+}    
+// ============================================
+// TOGGLE STUDENT VERIFICATION STATUS
+// ============================================
+async function toggleVerifyStudent(id, newStatus) {
+    try {
+        const { error } = await supabaseClient
+            .from('students')
+            .update({ is_verified: newStatus })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        showMessage(newStatus ? 'Student verified successfully!' : 'Verification removed!', 'success');
+        loadStudents(); // টেবিল রিফ্রেশ করার জন্য
+    } catch (error) {
+        console.error('Error updating verification status:', error);
+        showMessage('Error: ' + error.message, 'error');
+    }
+}
 }
